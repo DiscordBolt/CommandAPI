@@ -25,18 +25,19 @@ public class CommandListener {
             return;
         }
 
-        // Message is just a single prefix.
-        if (message.length() <= 1) {
+        // Message is shorter than or equal to prefix.
+        if (message.length() <= manager.getCommandPrefix(e.getGuild()).length()) {
             return;
         }
 
-        // Check if message started with our command prefix
-        if (message.charAt(0) != manager.getCommandPrefix(e.getGuild())) {
+        // Check if message starts with our command prefix
+        if(!message.startsWith(manager.getCommandPrefix(e.getGuild()))) {
             return;
         }
 
         int userArgCount = message.split(" ").length;
-        CustomCommand customCommand = manager.getCommands().stream().filter(command -> command.getCommands().length <= userArgCount).filter(command -> command.matches(message)).reduce((first, second) -> second).orElse(null);
+        int prefixLength = manager.getCommandPrefix(e.getGuild()).length();
+        CustomCommand customCommand = manager.getCommands().stream().filter(command -> command.getCommands().length <= userArgCount).filter(command -> command.matches(message, prefixLength)).reduce((first, second) -> second).orElse(null);
 
         if (customCommand != null) {
             logger.trace("Preexecuting " + manager.getCommandPrefix(e.getGuild()) + String.join(" ", customCommand.getCommands()));

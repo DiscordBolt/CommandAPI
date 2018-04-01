@@ -16,11 +16,11 @@ import java.util.stream.Collectors;
  */
 public class CommandManager {
 
-    private final char DEFAULT_PREFIX = '!';
+    private String globalDefaultPrefix;
     private IDiscordClient client;
     private Logger logger = LoggerFactory.getLogger(CommandManager.class);
     private List<CustomCommand> commands = new ArrayList<>();
-    private Map<Long, Character> commandPrefixes = new HashMap<Long, Character>();
+    private Map<Long, String> commandPrefixes = new HashMap<>();
 
     /**
      * Initalize Command API
@@ -28,11 +28,20 @@ public class CommandManager {
      * @param client        IDiscordClient
      * @param packagePrefix package string where commands are located
      */
-    public CommandManager(IDiscordClient client, String packagePrefix) {
+    public CommandManager(IDiscordClient client, String packagePrefix, String defaultPrefix) {
         logger.info("Initializing Commands");
+
+        // Check prefix for space
+        if(defaultPrefix.contains(" ")) {
+            logger.error("Prefix cannot contain a space.");
+            throw new IllegalArgumentException("Prefix cannot contain a space");
+        }
 
         // Save IDiscordClient
         this.client = client;
+
+        // Save default prefix
+        this.globalDefaultPrefix = defaultPrefix.toLowerCase();
 
         // Get all static methods with @BotCommand and create CustomCommand objects
         commands.addAll(new Reflections(packagePrefix, new MethodAnnotationsScanner()).getMethodsAnnotatedWith(BotCommand.class).stream().filter(a -> Modifier.isStatic(a.getModifiers())).map(a -> new CustomCommand(this, a)).collect(Collectors.toList()));
@@ -76,10 +85,10 @@ public class CommandManager {
      * @param guild
      * @return char command prefix for given guild
      */
-    public char getCommandPrefix(IGuild guild) {
+    public String getCommandPrefix(IGuild guild) {
         if (guild == null)
-            return DEFAULT_PREFIX;
-        return commandPrefixes.getOrDefault(guild.getLongID(), DEFAULT_PREFIX);
+            return globalDefaultPrefix;
+        return commandPrefixes.getOrDefault(guild.getLongID(), globalDefaultPrefix);
     }
 
     /**
@@ -88,8 +97,13 @@ public class CommandManager {
      * @param guild         Guild to change the prefix for
      * @param commandPrefix new prefix characters all commands must be prefaced with
      */
-    public void setCommandPrefix(IGuild guild, char commandPrefix) {
-        commandPrefixes.put(guild.getLongID(), commandPrefix);
+    public void setCommandPrefix(IGuild guild, String commandPrefix) {
+        // Check prefix for space
+        if(commandPrefix.contains(" ")) {
+            logger.error("Cannot set guild prefix. Prefix cannot contain a space.");
+            throw new IllegalArgumentException("Prefix cannot contain a space");
+        }
+        commandPrefixes.put(guild.getLongID(), commandPrefix.toLowerCase());
     }
 
     static class CommandComparator implements Comparator<CustomCommand> {

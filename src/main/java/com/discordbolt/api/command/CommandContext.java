@@ -1,5 +1,6 @@
 package com.discordbolt.api.command;
 
+import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
@@ -21,9 +22,13 @@ public class CommandContext {
 
     protected CommandContext(IMessage message, CustomCommand customCommand) {
         this.message = message;
-        arguments = Arrays.asList(getMessageContent().substring(1, getMessageContent().length()).split(" "));
         this.customCommand = customCommand;
+        arguments = Arrays.asList(getMessageContent().substring(this.getPrefix().length(), getMessageContent().length()).split(" "));
     }
+
+    public IDiscordClient getClient() { return message.getClient(); }
+
+    public String getPrefix() { return customCommand.getCommandManager().getCommandPrefix(message.getGuild()); }
 
     public IMessage getMessage() {
         return message;
@@ -87,6 +92,12 @@ public class CommandContext {
     public IMessage replyWith(EmbedObject embedObject) {
         return RequestBuffer.request(() -> {
             return getChannel().sendMessage(embedObject);
+        }).get();
+    }
+
+    public IMessage replyWith(String message, EmbedObject embedObject) {
+        return RequestBuffer.request( () -> {
+            return getChannel().sendMessage(message, embedObject);
         }).get();
     }
 

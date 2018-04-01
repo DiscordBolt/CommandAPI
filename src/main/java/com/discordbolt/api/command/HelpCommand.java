@@ -18,54 +18,38 @@ public class HelpCommand {
 
     @BotCommand(command = "help", aliases = "h", module = "Help Module", secret = true, description = "View all available commands.", usage = "Help [Module]")
     public static void helpCommand(CommandContext cc) {
-
         List<String> modules = manager.getCommands().stream().map(CustomCommand::getModule).distinct().collect(Collectors.toList());
+        String commandPrefix = manager.getCommandPrefix(cc.getGuild());
 
         if (cc.getArgCount() > 1) {
             String userRequestedModule = cc.combineArgs(1, cc.getArgCount() - 1);
-            modules = modules.stream().filter(s -> s.equalsIgnoreCase(userRequestedModule)).collect(Collectors.toList());
-            if (modules.size() < 1) {
-                cc.replyWith("No modules found matching \"" + userRequestedModule + "\".");
+            List<String> commands = manager.getCommands().stream().filter(c -> c.getModule().equalsIgnoreCase(userRequestedModule) && !c.isSecret()).map(cmd -> String.join(" ", cmd.getCommands())).collect(Collectors.toList());
+            List<String> commandDescs = manager.getCommands().stream().filter(c -> c.getModule().equalsIgnoreCase(userRequestedModule) && !c.isSecret()).map(CustomCommand::getDescription).collect(Collectors.toList());
+
+            if(commands.isEmpty()) {
+                cc.replyWith("Either module doesn't exist or it doesn't have any commands to display.");
                 return;
             }
-        }
-
-        char commandPrefix = manager.getCommandPrefix(cc.getGuild());
-
-        boolean send = false;
-        EmbedBuilder embed = new EmbedBuilder();
-        embed.withColor(36, 153, 153);
-
-        StringBuilder sb = new StringBuilder();
-        for (String module : modules) {
-            sb.setLength(0);
-
-            for (CustomCommand command : manager.getCommands().stream().filter(c -> c.getModule().equals(module)).collect(Collectors.toList())) {
-                // Check if the user has permission for the command.
-                if (!cc.getAuthor().getPermissionsForGuild(cc.getGuild()).containsAll(command.getPermissions()))
-                    continue;
-                if (command.isSecret())
-                    continue;
-
-                sb.append('`').append(commandPrefix).append(String.join(" ", command.getCommands())).append("` | ").append(command.getDescription()).append('\n');
+            StringBuilder sb = new StringBuilder(String.format("Commands for module: %s\n```\n", userRequestedModule));
+            for(String command: commands) {
+                sb.append(String.format("%-20s | %s\n", String.format("%s%s", commandPrefix, command), commandDescs.get(commands.indexOf(command))));
             }
-            if (sb.length() > 1024)
-                sb.setLength(1024);
+            sb.append("```");
+            cc.replyWith(sb.toString());
+        } else {
+            StringBuilder sb = new StringBuilder("```\n");
+            for (String module : modules) {
 
-            if (embed.getTotalVisibleCharacters() + sb.length() + module.length() >= 6000)
-                continue;
-
-            if (module.length() == 0 || sb.length() == 0) {
-                continue;
+                List<CustomCommand> commands = manager.getCommands().stream()
+                        .filter(c -> c.getModule().equalsIgnoreCase(module) && !c.isSecret())
+                        .collect(Collectors.toList());
+                if(commands.isEmpty())
+                    continue;
+                sb.append(String.format("%-20s | For module commands use: %shelp %s\n", module, commandPrefix, module));
             }
-
-            send = true;
-            embed.appendField(module, sb.toString(), false);
+            sb.append("```");
+            cc.replyWith(sb.toString());
         }
-        if (send)
-            cc.replyWith(embed.build());
-        else
-            cc.replyWith("No available commands.");
     }
 
     @EventSubscriber

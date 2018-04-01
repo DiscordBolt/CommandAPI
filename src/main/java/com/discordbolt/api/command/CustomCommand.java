@@ -71,6 +71,8 @@ public class CustomCommand {
         this.maxArgs = maxArgs;
     }
 
+    public CommandManager getCommandManager() { return manager; }
+
     public String getBaseCommand() {
         return command[0];
     }
@@ -120,7 +122,6 @@ public class CustomCommand {
     }
 
     public void preexec(IMessage message, IUser user) {
-
         CommandContext cc = new CommandContext(message, this);
 
         // Check if the command should respond to PMs
@@ -185,8 +186,8 @@ public class CustomCommand {
         }
     }
 
-    public boolean matches(String userCommand) {
-        String userBaseCommand = userCommand.substring(1, userCommand.indexOf(" ") > 0 ? userCommand.indexOf(" ") : userCommand.length());
+    public boolean matches(String userCommand, int prefixLength) {
+        String userBaseCommand = userCommand.substring(prefixLength, userCommand.indexOf(" ") > 0 ? userCommand.indexOf(" ") : userCommand.length());
 
         for (int i = 0; i < getCommands().length; i++) {
             if (i == 0) {  // Checking the base command
