@@ -1,0 +1,41 @@
+group 'DiscordBolt'
+version '2.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        // Used for DiscordBolt dependencies and dev versions of Discord4J
+        url  'https://jitpack.io'
+    }
+}
+
+dependencies {
+    // Discord 4J
+    implementation "com.github.Discord4J.Discord4J:Discord4J-core:v3-SNAPSHOT"
+
+    // Reflection API
+    implementation group: 'org.reflections', name: 'reflections', version: '0.9.11'
+
+    //JUnit
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+task defineVersion(dependsOn: processResources) {
+    doLast {
+        file("$buildDir/resources/main/CommandAPI.properties").withWriter { w ->
+            Properties p = new Properties()
+            p.load(new FileInputStream(new File('src/main/resources/CommandAPI.properties')))
+            p['VERSION'] = project.version.toString()
+            p.store w, null
+        }
+    }
+}
+
+classes {
+    dependsOn defineVersion
+}

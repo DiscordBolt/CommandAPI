@@ -4,12 +4,6 @@
 # Log file
 *.log
 
-# Intellij files
-/.idea
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
 # Package Files #
 *.jar
 *.war
@@ -18,5 +12,17 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# virtual machine crash logs
 hs_err_pid*
+
+# Artifacts directory
+artifacts/
+
+# Intellij Project Files
+.idea/
+
+# Gradle Directory
+.gradle/
+
+# Build folder
+build/
