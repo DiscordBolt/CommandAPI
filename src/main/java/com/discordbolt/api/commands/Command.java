@@ -9,13 +9,13 @@ public abstract class Command {
     private String usage;
     private String module;
 
-    private String[] aliases;
-    private long[] channelWhitelist;
-    private String[] channelNameWhitelist;
-    private long[] channelBlacklist;
-    private String[] channelNameBlacklist;
-    private Permission[] permissions;
-    private int[] args;
+    private String[] aliases = {};
+    private long[] channelWhitelist = {};
+    private String[] channelNameWhitelist = {};
+    private long[] channelBlacklist = {};
+    private String[] channelNameBlacklist = {};
+    private Permission[] permissions = {};
+    private int[] args = {};
     private boolean secret;
     private boolean allowDM;
     private boolean deleteCommandMessage;

@@ -83,32 +83,26 @@ class CustomCommand {
         this.module = commandClass.getModule();
         this.description = commandClass.getDescription();
         this.usage = commandClass.getUsage();
-        if (commandClass.getAliases() != null)
-            this.aliases.addAll(Arrays.asList(commandClass.getAliases()));
-        if (commandClass.getChannelWhitelist() != null)
-            this.channelWhitelist.addAll(Arrays.stream(commandClass.getChannelWhitelist()).boxed().collect(Collectors.toList()));
-        if (commandClass.getChannelNameWhitelist() != null)
-            this.channelNameWhitelist.addAll(Arrays.asList(commandClass.getChannelNameWhitelist()));
-        if (commandClass.getChannelBlacklist() != null)
-            this.channelBlacklist.addAll(Arrays.stream(commandClass.getChannelBlacklist()).boxed().collect(Collectors.toList()));
-        if (commandClass.getChannelNameBlacklist() != null)
-            this.channelNameBlacklist.addAll(Arrays.asList(commandClass.getChannelNameBlacklist()));
-        if (commandClass.getPermissions() != null)
-            this.permissions.addAll(Arrays.asList(commandClass.getPermissions()));
+        this.aliases.addAll(Arrays.asList(commandClass.getAliases()));
+        this.channelWhitelist.addAll(Arrays.stream(commandClass.getChannelWhitelist()).boxed().collect(Collectors.toList()));
+        this.channelNameWhitelist.addAll(Arrays.asList(commandClass.getChannelNameWhitelist()));
+        this.channelBlacklist.addAll(Arrays.stream(commandClass.getChannelBlacklist()).boxed().collect(Collectors.toList()));
+        this.channelNameBlacklist.addAll(Arrays.asList(commandClass.getChannelNameBlacklist()));
+        this.permissions.addAll(Arrays.asList(commandClass.getPermissions()));
         this.argRange = commandClass.getArgs();
         this.secret = commandClass.isSecret();
         this.allowDM = commandClass.isAllowDM();
         this.delete = commandClass.isDeleteCommandMessage();
 
-        if (argRange != null && (argRange.length >= 1 && getCommands().size() > argRange[0])) {
+        if (argRange.length >= 1 && getCommands().size() > argRange[0]) {
             throw new IllegalStateException("Too many subcommands for given arg count. Command: " + String.join(" ", getCommands()));
         }
 
-        if (argRange != null && (argRange.length >= 2 && argRange[0] > argRange[1])) {
+        if (argRange.length >= 2 && argRange[0] > argRange[1]) {
             throw new IllegalStateException("Argument range is invalid! Command: " + String.join(" ", getCommands()));
         }
 
-        if (permissions != null && (allowDM && !permissions.isEmpty())) {
+        if (allowDM && !permissions.isEmpty()) {
             throw new IllegalStateException("Can not execute command in DMs that require permissions. Command: " + String.join(" ", getCommands()));
         }
     }
