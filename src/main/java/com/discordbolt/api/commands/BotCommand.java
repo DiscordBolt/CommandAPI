@@ -47,19 +47,23 @@ public @interface BotCommand {
      */
     String[] aliases() default {};
 
+    long[] channelWhitelist() default {};
+
     /**
      * A list of channel names that this command is allowed to execute in
      *
      * @return
      */
-    String[] allowedChannelNames() default {};
+    String[] channelNameWhitelist() default {};
+
+    long[] channelBlacklist() default {};
 
     /**
      * A list of channel names that this command is not allowed to execute in
      *
      * @return
      */
-    String[] disallowedChannelNames() default {};
+    String[] channelNameBlacklist() default {};
 
     /**
      * Required permissions a user executing a command must have

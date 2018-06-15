@@ -23,7 +23,10 @@ public class CustomCommand {
     private CommandManager manager;
 
     private List<String> command;
+
     private Method method;
+    private Command commandClass;
+
     private String description;
     private String usage;
     private String module;
@@ -48,8 +51,10 @@ public class CustomCommand {
         this.description = annotation.description();
         this.usage = annotation.usage();
         this.aliases.addAll(Arrays.asList(annotation.aliases()));
-        this.channelNameWhitelist.addAll(Arrays.asList(annotation.allowedChannelNames()));
-        this.channelNameBlacklist.addAll(Arrays.asList(annotation.disallowedChannelNames()));
+        this.channelWhitelist.addAll(Arrays.stream(annotation.channelWhitelist()).boxed().collect(Collectors.toList()));
+        this.channelNameWhitelist.addAll(Arrays.asList(annotation.channelNameWhitelist()));
+        this.channelBlacklist.addAll(Arrays.stream(annotation.channelBlacklist()).boxed().collect(Collectors.toList()));
+        this.channelNameBlacklist.addAll(Arrays.asList(annotation.channelNameBlacklist()));
         this.permissions.addAll(Arrays.asList(annotation.permissions()));
         this.argRange = annotation.args();
         this.secret = annotation.secret();
@@ -66,6 +71,43 @@ public class CustomCommand {
 
         if (allowDM && !permissions.isEmpty()) {
             throw new IllegalStateException("Can not execute command in DMs that require permissions. Command: " + String.join(" ", getCommands()));
+        }
+    }
+
+    protected CustomCommand(CommandManager manager, Class<? extends Command> commandClass) {
+        this.manager = manager;
+
+        try {
+            this.commandClass = commandClass.getDeclaredConstructor().newInstance();
+
+            this.command = Arrays.stream(this.commandClass.getCommand()).map(String::toLowerCase).collect(Collectors.toList());
+            this.module = this.commandClass.getModule();
+            this.description = this.commandClass.getDescription();
+            this.usage = this.commandClass.getUsage();
+            this.aliases.addAll(Arrays.asList(this.commandClass.getAliases()));
+            this.channelWhitelist.addAll(Arrays.stream(this.commandClass.getChannelWhitelist()).boxed().collect(Collectors.toList()));
+            this.channelNameWhitelist.addAll(Arrays.asList(this.commandClass.getChannelNameWhitelist()));
+            this.channelBlacklist.addAll(Arrays.stream(this.commandClass.getChannelBlacklist()).boxed().collect(Collectors.toList()));
+            this.channelNameBlacklist.addAll(Arrays.asList(this.commandClass.getChannelNameBlacklist()));
+            this.permissions.addAll(Arrays.asList(this.commandClass.getPermissions()));
+            this.argRange = this.commandClass.getArgs();
+            this.secret = this.commandClass.isSecret();
+            this.allowDM = this.commandClass.isAllowDM();
+            this.delete = this.commandClass.isDeleteCommandMessage();
+
+            if (argRange.length >= 1 && getCommands().size() > argRange[0]) {
+                throw new IllegalStateException("Too many subcommands for given arg count. Command: " + String.join(" ", getCommands()));
+            }
+
+            if (argRange.length >= 2 && argRange[0] > argRange[1]) {
+                throw new IllegalStateException("Argument range is invalid! Command: " + String.join(" ", getCommands()));
+            }
+
+            if (allowDM && !permissions.isEmpty()) {
+                throw new IllegalStateException("Can not execute command in DMs that require permissions. Command: " + String.join(" ", getCommands()));
+            }
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+            LOGGER.error("Unable to register \"" + commandClass.getName() + "\" command", ex);
         }
     }
 
@@ -179,7 +221,10 @@ public class CustomCommand {
 
     private Mono<Message> executeCommand(CommandContext commandContext) {
         try {
-            method.invoke(null, commandContext);
+            if (method != null)
+                method.invoke(null, commandContext);
+            else
+                commandClass.execute(commandContext);
             return Mono.empty();
         } catch (InvocationTargetException ite) {
             if (ite.getCause() instanceof CommandException) {

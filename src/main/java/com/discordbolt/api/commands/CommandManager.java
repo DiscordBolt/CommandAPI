@@ -32,7 +32,7 @@ public class CommandManager {
         // Save DiscordClient
         this.client = client;
 
-        // Get all static methods with @BotCommand and create CustomCommand objects
+        // Get all public static methods with @BotCommand and create CustomCommand objects
         commands.addAll(new Reflections(packagePrefix, new MethodAnnotationsScanner()).getMethodsAnnotatedWith(BotCommand.class).stream().filter(a -> Modifier.isStatic(a.getModifiers())).filter(a -> Modifier.isPublic(a.getModifiers())).map(a -> {
             try {
                 return new CustomCommand(this, a);
@@ -41,6 +41,9 @@ public class CommandManager {
                 return null;
             }
         }).filter(Objects::nonNull).collect(Collectors.toList()));
+
+        // Get all classes that extend Command
+        commands.addAll(new Reflections(packagePrefix).getSubTypesOf(Command.class).stream().map(commandClass -> new CustomCommand(this, commandClass)).collect(Collectors.toList()));
 
         // Sort all registered commands for the Help Module
         commands.sort(Comparator.comparing(c -> (c.getModule() + " " + String.join(" ", c.getCommands()))));
