@@ -28,18 +28,19 @@ public class CommandListener {
     }
 
     private void onCommand(Message message) {
-        Mono.just(message).filterWhen(msg -> msg.getGuild().map(manager::getCommandPrefix).map(prefix -> msg.getContent().get().startsWith(prefix))).doOnNext(thingy -> LOGGER.info(thingy.getContent().get()))
-            .map(msg -> msg.getGuild()
-                           .map(manager::getCommandPrefix)
-                           .map(prefix -> msg.getContent().get().substring(prefix.length()))
-                           .map(rawCommand -> manager.getCommands()
-                                                     .stream()
-                                                     .filter(command -> command.getCommands().size() <= rawCommand.split(" ").length)
-                                                     .filter(command -> matches(command, message.getContent().get()))
-                                                     .reduce((first, second) -> second)
-                                                     .orElse(null)).filter(Objects::nonNull)
-                           .doOnNext(command -> command.preexec(message))).doOnNext(thingy -> LOGGER.info(thingy.block().getCommands().toString()))
-            .subscribe();
+        Mono.just(message)
+            .filterWhen(msg -> msg.getGuild().map(manager::getCommandPrefix).map(prefix -> msg.getContent().get().startsWith(prefix)))
+            .flatMap(msg -> msg.getGuild()
+                               .map(manager::getCommandPrefix)
+                               .map(prefix -> msg.getContent().get().substring(prefix.length()))
+                               .map(rawCommand -> manager.getCommands()
+                                                         .stream()
+                                                         .filter(command -> command.getCommands().size() <= rawCommand.split(" ").length)
+                                                         .filter(command -> matches(command, message.getContent().get()))
+                                                         .reduce((first, second) -> second)
+                                                         .orElse(null))
+                               .filter(Objects::nonNull))
+            .subscribe(c -> c.preexec(message));
     }
 
     private boolean matches(CustomCommand customCommand, String userCommand) {
