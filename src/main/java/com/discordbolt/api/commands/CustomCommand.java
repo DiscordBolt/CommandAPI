@@ -84,9 +84,11 @@ class CustomCommand {
         this.description = commandClass.getDescription();
         this.usage = commandClass.getUsage();
         this.aliases.addAll(Arrays.asList(commandClass.getAliases()));
-        this.channelWhitelist.addAll(Arrays.stream(commandClass.getChannelWhitelist()).boxed().collect(Collectors.toList()));
+        if (commandClass.getChannelWhitelist() != null)
+            this.channelWhitelist.addAll(Arrays.stream(commandClass.getChannelWhitelist()).boxed().collect(Collectors.toList()));
         this.channelNameWhitelist.addAll(Arrays.asList(commandClass.getChannelNameWhitelist()));
-        this.channelBlacklist.addAll(Arrays.stream(commandClass.getChannelBlacklist()).boxed().collect(Collectors.toList()));
+        if (commandClass.getChannelBlacklist() != null)
+            this.channelBlacklist.addAll(Arrays.stream(commandClass.getChannelBlacklist()).boxed().collect(Collectors.toList()));
         this.channelNameBlacklist.addAll(Arrays.asList(commandClass.getChannelNameBlacklist()));
         this.permissions.addAll(Arrays.asList(commandClass.getPermissions()));
         this.argRange = commandClass.getArgs();
