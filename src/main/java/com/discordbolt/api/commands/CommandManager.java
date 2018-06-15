@@ -42,14 +42,33 @@ public class CommandManager {
             }
         }).filter(Objects::nonNull).collect(Collectors.toList()));
 
-        // Get all classes that extend Command
-        commands.addAll(new Reflections(packagePrefix).getSubTypesOf(Command.class).stream().map(commandClass -> new CustomCommand(this, commandClass)).collect(Collectors.toList()));
+        // Register our help command
+        registerCommand(new HelpCommand(this));
 
         // Sort all registered commands for the Help Module
-        commands.sort(Comparator.comparing(c -> (c.getModule() + " " + String.join(" ", c.getCommands()))));
+        sortCommands();
 
         // Register our command listener
         CommandListener commandListener = new CommandListener(this, client);
+    }
+
+    public void registerCommand(Command command) {
+        commands.add(new CustomCommand(this, command));
+        sortCommands();
+    }
+
+    /**
+     * Set the command prefix of a specified guild
+     *
+     * @param guild         Guild to change the prefix for
+     * @param commandPrefix new prefix string all commands must be prefaced with
+     */
+    public void setCommandPrefix(Guild guild, String commandPrefix) {
+        setCommandPrefix(guild.getId().asLong(), commandPrefix);
+    }
+
+    public void setCommandPrefix(long guildID, String commandPrefix) {
+        commandPrefixes.put(guildID, commandPrefix);
     }
 
     /**
@@ -82,21 +101,11 @@ public class CommandManager {
         return getCommandPrefix(guild.getId().asLong());
     }
 
-    public String getCommandPrefix(long guildID) {
+    protected String getCommandPrefix(long guildID) {
         return commandPrefixes.getOrDefault(guildID, DEFAULT_PREFIX);
     }
 
-    /**
-     * Set the command prefix of a specified guild
-     *
-     * @param guild         Guild to change the prefix for
-     * @param commandPrefix new prefix string all commands must be prefaced with
-     */
-    public void setCommandPrefix(Guild guild, String commandPrefix) {
-        setCommandPrefix(guild.getId().asLong(), commandPrefix);
-    }
-
-    public void setCommandPrefix(long guildID, String commandPrefix) {
-        commandPrefixes.put(guildID, commandPrefix);
+    private void sortCommands() {
+        commands.sort(Comparator.comparing(c -> (c.getModule() + " " + String.join(" ", c.getCommands()))));
     }
 }

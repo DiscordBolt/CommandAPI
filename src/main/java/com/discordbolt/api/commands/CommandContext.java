@@ -13,7 +13,7 @@ public class CommandContext {
     private List<String> arguments;
     private CustomCommand customCommand;
 
-    protected CommandContext(Message message, CustomCommand customCommand) {
+    CommandContext(Message message, CustomCommand customCommand) {
         this.message = message;
         getGuild().subscribe(guild -> this.arguments = Arrays.asList(getMessageContent().substring(customCommand.getCommandManager().getCommandPrefix(guild).length()).split(" ")));
         this.customCommand = customCommand;

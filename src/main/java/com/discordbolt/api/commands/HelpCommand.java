@@ -17,7 +17,7 @@ public class HelpCommand extends Command {
 
     private CommandManager manager;
 
-    public HelpCommand(CommandManager manager) {
+    HelpCommand(CommandManager manager) {
         super(command, description, usage, module);
         this.manager = manager;
         super.setSecret(true);

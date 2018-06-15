@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 import static com.discordbolt.api.commands.ValidityCheck.*;
 
-public class CustomCommand {
+class CustomCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomCommand.class);
 
@@ -41,7 +41,7 @@ public class CustomCommand {
     private boolean allowDM;
     private boolean delete;
 
-    protected CustomCommand(CommandManager manager, Method method) {
+    CustomCommand(CommandManager manager, Method method) {
         this.manager = manager;
 
         BotCommand annotation = method.getAnnotation(BotCommand.class);
@@ -74,44 +74,40 @@ public class CustomCommand {
         }
     }
 
-    protected CustomCommand(CommandManager manager, Class<? extends Command> commandClass) {
+    CustomCommand(CommandManager manager, Command command) {
         this.manager = manager;
 
-        try {
-            this.commandClass = commandClass.getDeclaredConstructor().newInstance();
+        this.commandClass = command;
 
-            this.command = Arrays.stream(this.commandClass.getCommand()).map(String::toLowerCase).collect(Collectors.toList());
-            this.module = this.commandClass.getModule();
-            this.description = this.commandClass.getDescription();
-            this.usage = this.commandClass.getUsage();
-            this.aliases.addAll(Arrays.asList(this.commandClass.getAliases()));
-            this.channelWhitelist.addAll(Arrays.stream(this.commandClass.getChannelWhitelist()).boxed().collect(Collectors.toList()));
-            this.channelNameWhitelist.addAll(Arrays.asList(this.commandClass.getChannelNameWhitelist()));
-            this.channelBlacklist.addAll(Arrays.stream(this.commandClass.getChannelBlacklist()).boxed().collect(Collectors.toList()));
-            this.channelNameBlacklist.addAll(Arrays.asList(this.commandClass.getChannelNameBlacklist()));
-            this.permissions.addAll(Arrays.asList(this.commandClass.getPermissions()));
-            this.argRange = this.commandClass.getArgs();
-            this.secret = this.commandClass.isSecret();
-            this.allowDM = this.commandClass.isAllowDM();
-            this.delete = this.commandClass.isDeleteCommandMessage();
+        this.command = Arrays.stream(commandClass.getCommand()).map(String::toLowerCase).collect(Collectors.toList());
+        this.module = commandClass.getModule();
+        this.description = commandClass.getDescription();
+        this.usage = commandClass.getUsage();
+        this.aliases.addAll(Arrays.asList(commandClass.getAliases()));
+        this.channelWhitelist.addAll(Arrays.stream(commandClass.getChannelWhitelist()).boxed().collect(Collectors.toList()));
+        this.channelNameWhitelist.addAll(Arrays.asList(commandClass.getChannelNameWhitelist()));
+        this.channelBlacklist.addAll(Arrays.stream(commandClass.getChannelBlacklist()).boxed().collect(Collectors.toList()));
+        this.channelNameBlacklist.addAll(Arrays.asList(commandClass.getChannelNameBlacklist()));
+        this.permissions.addAll(Arrays.asList(commandClass.getPermissions()));
+        this.argRange = commandClass.getArgs();
+        this.secret = commandClass.isSecret();
+        this.allowDM = commandClass.isAllowDM();
+        this.delete = commandClass.isDeleteCommandMessage();
 
-            if (argRange.length >= 1 && getCommands().size() > argRange[0]) {
-                throw new IllegalStateException("Too many subcommands for given arg count. Command: " + String.join(" ", getCommands()));
-            }
+        if (argRange.length >= 1 && getCommands().size() > argRange[0]) {
+            throw new IllegalStateException("Too many subcommands for given arg count. Command: " + String.join(" ", getCommands()));
+        }
 
-            if (argRange.length >= 2 && argRange[0] > argRange[1]) {
-                throw new IllegalStateException("Argument range is invalid! Command: " + String.join(" ", getCommands()));
-            }
+        if (argRange.length >= 2 && argRange[0] > argRange[1]) {
+            throw new IllegalStateException("Argument range is invalid! Command: " + String.join(" ", getCommands()));
+        }
 
-            if (allowDM && !permissions.isEmpty()) {
-                throw new IllegalStateException("Can not execute command in DMs that require permissions. Command: " + String.join(" ", getCommands()));
-            }
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-            LOGGER.error("Unable to register \"" + commandClass.getName() + "\" command", ex);
+        if (allowDM && !permissions.isEmpty()) {
+            throw new IllegalStateException("Can not execute command in DMs that require permissions. Command: " + String.join(" ", getCommands()));
         }
     }
 
-    protected CommandManager getCommandManager() {
+    CommandManager getCommandManager() {
         return manager;
     }
 

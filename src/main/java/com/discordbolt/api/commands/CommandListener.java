@@ -9,13 +9,13 @@ import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 
-public class CommandListener {
+class CommandListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommandListener.class);
 
     private CommandManager manager;
 
-    protected CommandListener(CommandManager manager, DiscordClient client) {
+    CommandListener(CommandManager manager, DiscordClient client) {
         this.manager = manager;
 
         client.getEventDispatcher()
