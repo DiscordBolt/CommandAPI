@@ -83,14 +83,18 @@ class CustomCommand {
         this.module = commandClass.getModule();
         this.description = commandClass.getDescription();
         this.usage = commandClass.getUsage();
-        this.aliases.addAll(Arrays.asList(commandClass.getAliases()));
+        if (commandClass.getAliases() != null)
+            this.aliases.addAll(Arrays.asList(commandClass.getAliases()));
         if (commandClass.getChannelWhitelist() != null)
             this.channelWhitelist.addAll(Arrays.stream(commandClass.getChannelWhitelist()).boxed().collect(Collectors.toList()));
-        this.channelNameWhitelist.addAll(Arrays.asList(commandClass.getChannelNameWhitelist()));
+        if (commandClass.getChannelNameWhitelist() != null)
+            this.channelNameWhitelist.addAll(Arrays.asList(commandClass.getChannelNameWhitelist()));
         if (commandClass.getChannelBlacklist() != null)
             this.channelBlacklist.addAll(Arrays.stream(commandClass.getChannelBlacklist()).boxed().collect(Collectors.toList()));
-        this.channelNameBlacklist.addAll(Arrays.asList(commandClass.getChannelNameBlacklist()));
-        this.permissions.addAll(Arrays.asList(commandClass.getPermissions()));
+        if (commandClass.getChannelNameBlacklist() != null)
+            this.channelNameBlacklist.addAll(Arrays.asList(commandClass.getChannelNameBlacklist()));
+        if (commandClass.getPermissions() != null)
+            this.permissions.addAll(Arrays.asList(commandClass.getPermissions()));
         this.argRange = commandClass.getArgs();
         this.secret = commandClass.isSecret();
         this.allowDM = commandClass.isAllowDM();
