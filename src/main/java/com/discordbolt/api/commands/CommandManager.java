@@ -33,7 +33,7 @@ public class CommandManager {
         this.client = client;
 
         // Get all static methods with @BotCommand and create CustomCommand objects
-        commands.addAll(new Reflections(packagePrefix, new MethodAnnotationsScanner()).getMethodsAnnotatedWith(BotCommand.class).stream().filter(a -> Modifier.isStatic(a.getModifiers())).map(a -> {
+        commands.addAll(new Reflections(packagePrefix, new MethodAnnotationsScanner()).getMethodsAnnotatedWith(BotCommand.class).stream().filter(a -> Modifier.isStatic(a.getModifiers())).filter(a -> Modifier.isPublic(a.getModifiers())).map(a -> {
             try {
                 return new CustomCommand(this, a);
             } catch (IllegalStateException e) {
