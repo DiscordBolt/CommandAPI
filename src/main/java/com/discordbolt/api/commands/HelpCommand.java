@@ -3,12 +3,16 @@ package com.discordbolt.api.commands;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Role;
 import discord4j.core.spec.EmbedCreateSpec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class HelpCommand extends Command {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HelpCommand.class);
 
     private static String[] command = {"help"};
     private static String description = "View all commands";
@@ -72,7 +76,7 @@ public class HelpCommand extends Command {
             embed.addField(module, sb.toString(), false);
         }
         if (send)
-            cc.replyWith(embed).subscribe();
+            cc.replyWith(embed).doOnError(throwable -> LOGGER.error("Error during sending help embed", throwable)).subscribe();
         else
             cc.replyWith("No available commands.").subscribe();
     }
