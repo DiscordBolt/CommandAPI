@@ -28,8 +28,7 @@ public class CommandListener {
     }
 
     private void onCommand(Message message) {
-        Mono.just(message)
-            .filterWhen(msg -> msg.getGuild().map(manager::getCommandPrefix).map(prefix -> msg.getContent().get().startsWith(prefix))).doOnNext(thingy -> LOGGER.info(thingy.getContent().get()))
+        Mono.just(message).filterWhen(msg -> msg.getGuild().map(manager::getCommandPrefix).map(prefix -> msg.getContent().get().startsWith(prefix))).doOnNext(thingy -> LOGGER.info(thingy.getContent().get()))
             .map(msg -> msg.getGuild()
                            .map(manager::getCommandPrefix)
                            .map(prefix -> msg.getContent().get().substring(prefix.length()))
@@ -38,9 +37,8 @@ public class CommandListener {
                                                      .filter(command -> command.getCommands().size() <= rawCommand.split(" ").length)
                                                      .filter(command -> matches(command, message.getContent().get()))
                                                      .reduce((first, second) -> second)
-                                                     .orElse(null))
-                           .filter(Objects::nonNull).doOnNext(thingy -> LOGGER.info(thingy.getCommands().toString()))
-                           .doOnNext(command -> command.preexec(message)))
+                                                     .orElse(null)).filter(Objects::nonNull)
+                           .doOnNext(command -> command.preexec(message))).doOnNext(thingy -> LOGGER.info(thingy.block().getCommands().toString()))
             .subscribe();
     }
 
