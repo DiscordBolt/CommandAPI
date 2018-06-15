@@ -1,6 +1,7 @@
 package com.discordbolt.api.commands;
 
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.Role;
 import discord4j.core.spec.EmbedCreateSpec;
 import org.slf4j.Logger;
@@ -76,7 +77,7 @@ public class HelpCommand extends Command {
             embed.addField(module, sb.toString(), false);
         }
         if (send)
-            cc.replyWith(embed).doOnError(throwable -> LOGGER.error("Error during sending help embed", throwable)).subscribe();
+            cc.replyWith(embed).subscribe(Message::getGuild, throwable -> LOGGER.error("embed error", throwable));
         else
             cc.replyWith("No available commands.").subscribe();
     }
