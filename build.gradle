@@ -1,36 +1,46 @@
-group 'DiscordBolt'
+group 'com.discordbolt.api'
 version '2.0-SNAPSHOT'
 
-apply plugin: 'java'
+buildscript {
+    ext {
+        discord4jVersion = "v3-SNAPSHOT"
+    }
+}
 
-sourceCompatibility = 1.8
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
+sourceCompatibility = 10
+targetCompatibility = 10
 
 repositories {
     mavenCentral()
-    jcenter()
     maven {
-        // Used for DiscordBolt dependencies and dev versions of Discord4J
-        url  'https://jitpack.io'
+        // Discord 4J
+        url  "https://jitpack.io"
     }
 }
 
 dependencies {
-    // Discord 4J
-    implementation "com.github.Discord4J.Discord4J:Discord4J-core:v3-SNAPSHOT"
-
-    // Reflection API
+    // Discord4J
+    implementation "com.discord4j.discord4j:discord4j-core:$discord4jVersion"
+    // Reflection (For finding commands)
     implementation group: 'org.reflections', name: 'reflections', version: '0.9.11'
+    // Logging
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
 
-    //JUnit
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.18.3'
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
 }
 
 task defineVersion(dependsOn: processResources) {
     doLast {
-        file("$buildDir/resources/main/CommandAPI.properties").withWriter { w ->
+        file("$buildDir/resources/main/application.properties").withWriter { w ->
             Properties p = new Properties()
-            p.load(new FileInputStream(new File('src/main/resources/CommandAPI.properties')))
-            p['VERSION'] = project.version.toString()
+            p.load(new FileInputStream(new File('src/main/resources/application.properties')))
+            p['commands.version'] = project.version.toString()
             p.store w, null
         }
     }
