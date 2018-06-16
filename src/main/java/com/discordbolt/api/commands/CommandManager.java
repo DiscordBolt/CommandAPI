@@ -71,6 +71,10 @@ public class CommandManager {
         commandPrefixes.put(guildID, commandPrefix);
     }
 
+    public void disableHelpCommand() {
+        commands.removeIf(command -> command.getCommands().equals(Collections.singletonList("help")));
+    }
+
     /**
      * Get the Discord4J client
      *
