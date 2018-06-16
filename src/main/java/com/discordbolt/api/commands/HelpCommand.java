@@ -76,8 +76,15 @@ public class HelpCommand extends Command {
             send = true;
             embed.addField(module, sb.toString(), false);
         }
-        if (send)
+        if (send) {
+            embed.setTitle("Command List");
+            embed.setDescription("description");
+
+
+
             cc.replyWith(embed).subscribe(Message::getGuild, throwable -> LOGGER.error("embed error", throwable));
+
+        }
         else
             cc.replyWith("No available commands.").subscribe();
     }
