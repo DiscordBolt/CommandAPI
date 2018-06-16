@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-import java.util.Objects;
+import java.util.Optional;
 
 class CommandListener {
 
@@ -37,13 +37,10 @@ class CommandListener {
                                                          .stream()
                                                          .filter(command -> command.getCommands().size() <= rawCommand.split(" ").length)
                                                          .filter(command -> matches(command, message.getContent().get()))
-                                                         .reduce((first, second) -> second)
-                                                         .orElse(null))
-                               .filter(Objects::nonNull))
-            .subscribe(c -> {
-                LOGGER.info("Executing " + c.getCommands());
-                c.preexec(message);
-            });
+                                                         .reduce((first, second) -> second)))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .subscribe(c -> c.preexec(message));
     }
 
     private boolean matches(CustomCommand customCommand, String userCommand) {
