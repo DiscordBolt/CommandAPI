@@ -40,7 +40,10 @@ class CommandListener {
                                                          .reduce((first, second) -> second)
                                                          .orElse(null))
                                .filter(Objects::nonNull))
-            .subscribe(c -> c.preexec(message));
+            .subscribe(c -> {
+                LOGGER.info("Executing " + c.getCommands());
+                c.preexec(message);
+            });
     }
 
     private boolean matches(CustomCommand customCommand, String userCommand) {
