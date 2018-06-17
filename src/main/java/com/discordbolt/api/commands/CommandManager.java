@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class CommandManager {
@@ -19,6 +20,7 @@ public class CommandManager {
     private DiscordClient client;
     private List<CustomCommand> commands = new ArrayList<>();
     private Map<Long, String> commandPrefixes = new HashMap<>();
+    private Consumer<CommandContext> consumer;
 
     /**
      * Initialize Command API
@@ -73,6 +75,14 @@ public class CommandManager {
 
     public void disableHelpCommand() {
         commands.removeIf(command -> command.getCommands().equals(Collections.singletonList("help")));
+    }
+
+    public void onCommandExecution(Consumer<CommandContext> consumer) {
+        this.consumer = consumer;
+    }
+
+    protected Consumer<CommandContext> getCommandConsumer() {
+        return consumer != null ? consumer : (c) -> {};
     }
 
     /**

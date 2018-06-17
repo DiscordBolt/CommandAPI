@@ -212,7 +212,7 @@ class CustomCommand {
             if (shouldDeleteMessages()) {
                 message.delete().subscribe();
             }
-        }).subscribe();
+        }).map(aVoid -> cc).doOnSuccess(manager.getCommandConsumer()).subscribe();
     }
 
     private Mono<Message> executeCommand(CommandContext commandContext) {
