@@ -45,15 +45,21 @@ class CustomCommand {
         this.manager = manager;
 
         BotCommand annotation = method.getAnnotation(BotCommand.class);
-        this.command = Arrays.stream(annotation.command()).map(String::toLowerCase).collect(Collectors.toList());
+        this.command = Arrays.stream(annotation.command())
+                             .map(String::toLowerCase)
+                             .collect(Collectors.toList());
         this.method = method;
         this.module = annotation.module();
         this.description = annotation.description();
         this.usage = annotation.usage();
         this.aliases.addAll(Arrays.asList(annotation.aliases()));
-        this.channelWhitelist.addAll(Arrays.stream(annotation.channelWhitelist()).boxed().collect(Collectors.toList()));
+        this.channelWhitelist.addAll(Arrays.stream(annotation.channelWhitelist())
+                                           .boxed()
+                                           .collect(Collectors.toList()));
         this.channelNameWhitelist.addAll(Arrays.asList(annotation.channelNameWhitelist()));
-        this.channelBlacklist.addAll(Arrays.stream(annotation.channelBlacklist()).boxed().collect(Collectors.toList()));
+        this.channelBlacklist.addAll(Arrays.stream(annotation.channelBlacklist())
+                                           .boxed()
+                                           .collect(Collectors.toList()));
         this.channelNameBlacklist.addAll(Arrays.asList(annotation.channelNameBlacklist()));
         this.permissions.addAll(Arrays.asList(annotation.permissions()));
         this.argRange = annotation.args();
@@ -62,15 +68,18 @@ class CustomCommand {
         this.delete = annotation.deleteCommandMessage();
 
         if (argRange.length >= 1 && getCommands().size() > argRange[0]) {
-            throw new IllegalStateException("Too many subcommands for given arg count. Command: " + String.join(" ", getCommands()));
+            throw new IllegalStateException("Too many subcommands for given arg count. Command: " + String
+                    .join(" ", getCommands()));
         }
 
         if (argRange.length >= 2 && argRange[0] > argRange[1]) {
-            throw new IllegalStateException("Argument range is invalid! Command: " + String.join(" ", getCommands()));
+            throw new IllegalStateException("Argument range is invalid! Command: " + String
+                    .join(" ", getCommands()));
         }
 
         if (allowDM && !permissions.isEmpty()) {
-            throw new IllegalStateException("Can not execute command in DMs that require permissions. Command: " + String.join(" ", getCommands()));
+            throw new IllegalStateException("Can not execute command in DMs that require permissions. Command: " + String
+                    .join(" ", getCommands()));
         }
     }
 
@@ -79,14 +88,20 @@ class CustomCommand {
 
         this.commandClass = command;
 
-        this.command = Arrays.stream(commandClass.getCommand()).map(String::toLowerCase).collect(Collectors.toList());
+        this.command = Arrays.stream(commandClass.getCommand())
+                             .map(String::toLowerCase)
+                             .collect(Collectors.toList());
         this.module = commandClass.getModule();
         this.description = commandClass.getDescription();
         this.usage = commandClass.getUsage();
         this.aliases.addAll(Arrays.asList(commandClass.getAliases()));
-        this.channelWhitelist.addAll(Arrays.stream(commandClass.getChannelWhitelist()).boxed().collect(Collectors.toList()));
+        this.channelWhitelist.addAll(Arrays.stream(commandClass.getChannelWhitelist())
+                                           .boxed()
+                                           .collect(Collectors.toList()));
         this.channelNameWhitelist.addAll(Arrays.asList(commandClass.getChannelNameWhitelist()));
-        this.channelBlacklist.addAll(Arrays.stream(commandClass.getChannelBlacklist()).boxed().collect(Collectors.toList()));
+        this.channelBlacklist.addAll(Arrays.stream(commandClass.getChannelBlacklist())
+                                           .boxed()
+                                           .collect(Collectors.toList()));
         this.channelNameBlacklist.addAll(Arrays.asList(commandClass.getChannelNameBlacklist()));
         this.permissions.addAll(Arrays.asList(commandClass.getPermissions()));
         this.argRange = commandClass.getArgs();
@@ -95,15 +110,18 @@ class CustomCommand {
         this.delete = commandClass.isDeleteCommandMessage();
 
         if (argRange.length >= 1 && getCommands().size() > argRange[0]) {
-            throw new IllegalStateException("Too many subcommands for given arg count. Command: " + String.join(" ", getCommands()));
+            throw new IllegalStateException("Too many subcommands for given arg count. Command: " + String
+                    .join(" ", getCommands()));
         }
 
         if (argRange.length >= 2 && argRange[0] > argRange[1]) {
-            throw new IllegalStateException("Argument range is invalid! Command: " + String.join(" ", getCommands()));
+            throw new IllegalStateException("Argument range is invalid! Command: " + String
+                    .join(" ", getCommands()));
         }
 
         if (allowDM && !permissions.isEmpty()) {
-            throw new IllegalStateException("Can not execute command in DMs that require permissions. Command: " + String.join(" ", getCommands()));
+            throw new IllegalStateException("Can not execute command in DMs that require permissions. Command: " + String
+                    .join(" ", getCommands()));
         }
     }
 
@@ -208,11 +226,19 @@ class CustomCommand {
     protected void preexec(Message message) {
         CommandContext cc = new CommandContext(message, this);
 
-        allPreChecks(cc).filter(checkResult -> checkResult != CheckResult.VALID).next().map(CheckResult::getMessage).flatMap(cc::replyWith).switchIfEmpty(this.executeCommand(cc)).doFinally(signal -> {
-            if (shouldDeleteMessages()) {
-                message.delete().subscribe();
-            }
-        }).map(aVoid -> cc).doOnSuccess(manager.getCommandConsumer()).subscribe();
+        allPreChecks(cc).filter(checkResult -> checkResult != CheckResult.VALID)
+                        .next()
+                        .map(CheckResult::getMessage)
+                        .flatMap(cc::replyWith)
+                        .switchIfEmpty(this.executeCommand(cc))
+                        .doFinally(signal -> {
+                            if (shouldDeleteMessages()) {
+                                message.delete().subscribe();
+                            }
+                        })
+                        .map(aVoid -> cc)
+                        .doOnSuccess(manager.getCommandConsumer())
+                        .subscribe();
     }
 
     private Mono<Message> executeCommand(CommandContext commandContext) {

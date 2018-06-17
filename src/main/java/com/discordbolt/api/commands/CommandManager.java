@@ -82,7 +82,7 @@ public class CommandManager {
     }
 
     protected Consumer<CommandContext> getCommandConsumer() {
-        return consumer != null ? consumer : (c) -> {};
+        return consumer != null ? consumer : (c) -> {LOGGER.error("NULL CONSUMER");};
     }
 
     /**
