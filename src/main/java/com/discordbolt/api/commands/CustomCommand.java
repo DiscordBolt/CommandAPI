@@ -232,12 +232,14 @@ class CustomCommand {
                         .flatMap(cc::replyWith)
                         .switchIfEmpty(this.executeCommand(cc))
                         .doFinally(signal -> {
+                            LOGGER.info("Executing final on command " + cc.getUserBaseCommand());
                             if (shouldDeleteMessages()) {
                                 message.delete().subscribe();
                             }
+                            if (manager.getCommandConsumer() != null) {
+                                manager.getCommandConsumer().accept(cc);
+                            }
                         })
-                        .map(aVoid -> cc)
-                        .doOnSuccess(manager.getCommandConsumer())
                         .subscribe();
     }
 
