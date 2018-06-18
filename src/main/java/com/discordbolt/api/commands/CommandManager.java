@@ -20,7 +20,7 @@ public class CommandManager {
     private DiscordClient client;
     private List<CustomCommand> commands = new ArrayList<>();
     private Map<Long, String> commandPrefixes = new HashMap<>();
-    private Consumer<CommandContext> consumer;
+    private volatile Consumer<CommandContext> consumer;
 
     /**
      * Initialize Command API
