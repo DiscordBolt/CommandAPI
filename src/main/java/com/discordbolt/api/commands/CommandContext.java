@@ -19,6 +19,15 @@ public class CommandContext {
         this.customCommand = customCommand;
     }
 
+    /**
+     * Get a list of strings that represent the command executed.
+     * This does not contain user supplied arguments
+     * @return
+     */
+    public List<String> getCommand() {
+        return customCommand.getCommands();
+    }
+
     public Message getMessage() {
         return message;
     }

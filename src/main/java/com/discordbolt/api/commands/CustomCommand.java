@@ -232,7 +232,6 @@ class CustomCommand {
                         .flatMap(cc::replyWith)
                         .switchIfEmpty(this.executeCommand(cc))
                         .doFinally(signal -> {
-                            LOGGER.info("Executing final on command " + cc.getUserBaseCommand());
                             if (shouldDeleteMessages()) {
                                 message.delete().subscribe();
                             }
