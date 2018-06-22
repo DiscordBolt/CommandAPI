@@ -15,6 +15,10 @@ apply plugin: 'checkstyle'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+checkstyle {
+    toolVersion "8.10.1"
+}
+
 repositories {
     mavenCentral()
     maven {
@@ -41,9 +45,9 @@ dependencies {
 
 task defineVersion(dependsOn: processResources) {
     doLast {
-        file("$buildDir/resources/main/commands.properties").withWriter { w ->
+        file("$buildDir/resources/main/application.properties").withWriter { w ->
             Properties p = new Properties()
-            p.load(new FileInputStream(new File('src/main/resources/commands.properties')))
+            p.load(new FileInputStream(new File('src/main/resources/application.properties')))
             p['version'] = project.version.toString()
             p.store w, null
         }

@@ -2,7 +2,6 @@ package com.discordbolt.api.commands;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.object.entity.Guild;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -74,7 +73,7 @@ public class CommandManager {
     public String getVersion() {
         try {
             Properties prop = new Properties();
-            prop.load(new FileInputStream("commands.properties"));
+            prop.load(this.getClass().getResourceAsStream("application.properties"));
             return prop.getProperty("version");
         } catch (IOException e) {
             return "SNAPSHOT";
