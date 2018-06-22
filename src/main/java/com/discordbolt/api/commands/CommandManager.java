@@ -2,15 +2,23 @@ package com.discordbolt.api.commands;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.object.entity.Guild;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class CommandManager {
 
@@ -25,24 +33,33 @@ public class CommandManager {
     /**
      * Initialize Command API
      *
-     * @param client        DiscordClient
+     * @param client DiscordClient
      * @param packagePrefix package string where commands are located
      */
     public CommandManager(DiscordClient client, String packagePrefix) {
-        LOGGER.info("Initializing Commands"); //TODO update to print version number (in application.properties)
+        LOGGER.info("Initializing Command API version {}", getVersion());
 
         // Save DiscordClient
         this.client = client;
 
         // Get all public static methods with @BotCommand and create CustomCommand objects
-        commands.addAll(new Reflections(packagePrefix, new MethodAnnotationsScanner()).getMethodsAnnotatedWith(BotCommand.class).stream().filter(a -> Modifier.isStatic(a.getModifiers())).filter(a -> Modifier.isPublic(a.getModifiers())).map(a -> {
-            try {
-                return new CustomCommand(this, a);
-            } catch (IllegalStateException e) {
-                LOGGER.error("Command Initialization exception.", e);
-                return null;
-            }
-        }).filter(Objects::nonNull).collect(Collectors.toList()));
+        commands.addAll(new Reflections(packagePrefix, new MethodAnnotationsScanner())
+                .getMethodsAnnotatedWith(BotCommand.class)
+                .stream()
+                .filter(method -> Modifier.isStatic(method.getModifiers()))
+                .filter(method -> Modifier.isPublic(method.getModifiers()))
+                .map(method -> {
+                    try {
+                        return new CustomCommand(this, method);
+                    } catch (IllegalStateException e) {
+                        LOGGER.error("Exception while creating command \"" + String
+                                .join(" ", method.getAnnotation(BotCommand.class)
+                                        .command()) + "\"", e);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList()));
 
         // Register our help command
         registerCommand(new HelpCommand(this));
@@ -54,6 +71,16 @@ public class CommandManager {
         CommandListener commandListener = new CommandListener(this, client);
     }
 
+    public String getVersion() {
+        try {
+            Properties prop = new Properties();
+            prop.load(new FileInputStream("application.properties"));
+            return prop.getProperty("commands.version");
+        } catch (IOException e) {
+            return "SNAPSHOT";
+        }
+    }
+
     public void registerCommand(Command command) {
         commands.add(new CustomCommand(this, command));
         sortCommands();
@@ -62,7 +89,7 @@ public class CommandManager {
     /**
      * Set the command prefix of a specified guild
      *
-     * @param guild         Guild to change the prefix for
+     * @param guild Guild to change the prefix for
      * @param commandPrefix new prefix string all commands must be prefaced with
      */
     public void setCommandPrefix(Guild guild, String commandPrefix) {
@@ -74,15 +101,17 @@ public class CommandManager {
     }
 
     public void disableHelpCommand() {
-        commands.removeIf(command -> command.getCommands().equals(Collections.singletonList("help")));
+        commands.removeIf(
+                command -> command.getCommands().equals(Collections.singletonList("help")));
     }
 
     public void onCommandExecution(Consumer<CommandContext> consumer) {
         this.consumer = consumer;
     }
 
-    protected Consumer<CommandContext> getCommandConsumer() {
-        return consumer != null ? consumer : (c) -> {};
+    Consumer<CommandContext> getCommandConsumer() {
+        return consumer != null ? consumer : (c) -> {
+        };
     }
 
     /**
@@ -90,7 +119,7 @@ public class CommandManager {
      *
      * @return IDiscordClient
      */
-    protected DiscordClient getClient() {
+    DiscordClient getClient() {
         return client;
     }
 
@@ -99,27 +128,28 @@ public class CommandManager {
      *
      * @return UnmodifiableList of CustomCommands
      */
-    protected List<CustomCommand> getCommands() {
+    List<CustomCommand> getCommands() {
         return Collections.unmodifiableList(commands);
     }
 
     /**
      * Get the command prefix of a given guild
      *
-     * @param guild
      * @return char command prefix for given guild
      */
-    protected String getCommandPrefix(Guild guild) {
-        if (guild == null)
+    String getCommandPrefix(Guild guild) {
+        if (guild == null) {
             return DEFAULT_PREFIX;
+        }
         return getCommandPrefix(guild.getId().asLong());
     }
 
-    protected String getCommandPrefix(long guildID) {
+    String getCommandPrefix(long guildID) {
         return commandPrefixes.getOrDefault(guildID, DEFAULT_PREFIX);
     }
 
     private void sortCommands() {
-        commands.sort(Comparator.comparing(c -> (c.getModule() + " " + String.join(" ", c.getCommands()))));
+        commands.sort(Comparator
+                .comparing(c -> (c.getModule() + " " + String.join(" ", c.getCommands()))));
     }
 }

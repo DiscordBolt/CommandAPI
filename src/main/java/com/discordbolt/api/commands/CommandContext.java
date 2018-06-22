@@ -1,11 +1,15 @@
 package com.discordbolt.api.commands;
 
-import discord4j.core.object.entity.*;
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.MessageChannel;
+import discord4j.core.object.entity.PrivateChannel;
+import discord4j.core.object.entity.User;
 import discord4j.core.spec.EmbedCreateSpec;
-import reactor.core.publisher.Mono;
-
 import java.util.Arrays;
 import java.util.List;
+import reactor.core.publisher.Mono;
 
 public class CommandContext {
 
@@ -15,14 +19,15 @@ public class CommandContext {
 
     CommandContext(Message message, CustomCommand customCommand) {
         this.message = message;
-        getGuild().subscribe(guild -> this.arguments = Arrays.asList(getMessageContent().substring(customCommand.getCommandManager().getCommandPrefix(guild).length()).split(" ")));
+        getGuild().subscribe(
+                guild -> this.arguments = Arrays.asList(getMessageContent().substring(customCommand
+                        .getCommandManager().getCommandPrefix(guild).length()).split(" ")));
         this.customCommand = customCommand;
     }
 
     /**
-     * Get a list of strings that represent the command executed.
-     * This does not contain user supplied arguments
-     * @return
+     * Get a list of strings that represent the command executed. This does not contain user
+     * supplied arguments
      */
     public List<String> getCommand() {
         return customCommand.getCommands();
@@ -76,51 +81,49 @@ public class CommandContext {
     public String combineArgs(int lowIndex, int highIndex) {
         StringBuilder sb = new StringBuilder();
         sb.append(getArgument(lowIndex));
-        for (int i = lowIndex + 1; i <= highIndex; i++)
+        for (int i = lowIndex + 1; i <= highIndex; i++) {
             sb.append(' ').append(getArgument(i));
+        }
 
         return sb.toString();
     }
 
     /**
-     * Reply to the command with a given message
-     * Note: Make sure to subscribe to the result or no message will be sent.
+     * Reply to the command with a given message Note: Make sure to subscribe to the result or no
+     * message will be sent.
      *
      * @param message Message to send
-     * @return
      */
     public Mono<Message> replyWith(String message) {
-        return getChannel().flatMap(channel -> channel.createMessage(spec -> spec.setContent(message)));
+        return getChannel()
+                .flatMap(channel -> channel.createMessage(spec -> spec.setContent(message)));
     }
 
     /**
-     * Reply to the command with a given embed
-     * Note: Make sure to subscribe to the result or no embed will be sent.
+     * Reply to the command with a given embed Note: Make sure to subscribe to the result or no
+     * embed will be sent.
      *
      * @param embed Embed to send
-     * @return
      */
     public Mono<Message> replyWith(EmbedCreateSpec embed) {
         return getChannel().flatMap(channel -> channel.createMessage(spec -> spec.setEmbed(embed)));
     }
 
     /**
-     * Reply to the command with a given message and embed
-     * Note: Make sure to subscribe to the result or no message will be sent.
+     * Reply to the command with a given message and embed Note: Make sure to subscribe to the
+     * result or no message will be sent.
      *
      * @param message Message to send
-     * @param embed   Embed to send
-     * @return
+     * @param embed Embed to send
      */
     public Mono<Message> replyWith(String message, EmbedCreateSpec embed) {
-        return getChannel().flatMap(channel -> channel.createMessage(spec -> spec.setContent(message).setEmbed(embed)));
+        return getChannel().flatMap(
+                channel -> channel.createMessage(spec -> spec.setContent(message).setEmbed(embed)));
     }
 
     /**
-     * Reply to the command with the usage
-     * Note: Make sure to subscribe to the result or no message will be sent.
-     *
-     * @return
+     * Reply to the command with the usage Note: Make sure to subscribe to the result or no message
+     * will be sent.
      */
     public Mono<Message> sendUsage() {
         return getGuild().map(customCommand::getUsage).flatMap(this::replyWith);

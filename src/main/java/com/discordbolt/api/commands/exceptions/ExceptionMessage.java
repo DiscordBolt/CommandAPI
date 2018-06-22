@@ -1,6 +1,6 @@
-package com.discordbolt.api.commands;
+package com.discordbolt.api.commands.exceptions;
 
-public interface ExceptionMessages {
+public interface ExceptionMessage {
 
     String API_LIMIT = "Sending Discord too many requests. Rate limit hit.";
     String PERMISSION_DENIED = "You do not have permission for this command!";
@@ -11,7 +11,5 @@ public interface ExceptionMessages {
     String TOO_FEW_ARGUMENTS = "Your command had too few arguments.";
     String TOO_MANY_ARGUMENTS = "Your command had too many arguments.";
     String INVALID_CHANNEL = "This command can not be executed in this channel!";
-
-    @Deprecated
     String INCORRECT_USAGE = "Your command did not match expected input. Please check !Help for usage.";
 }
