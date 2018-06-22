@@ -1,13 +1,11 @@
 package com.discordbolt.api.commands;
 
-import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.Role;
 import discord4j.core.spec.EmbedCreateSpec;
 import java.awt.Color;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class HelpCommand extends CustomCommand {
+class HelpCommand extends CustomCommand {
 
     private static String[] command = {"help"};
 
@@ -35,47 +33,39 @@ public class HelpCommand extends CustomCommand {
 
         String commandPrefix = cc.getGuild().map(manager::getCommandPrefix).block();
 
-        boolean send = false;
+        int fieldCount = 0;
         EmbedCreateSpec embed = new EmbedCreateSpec();
         embed.setColor(new Color(36, 153, 153).getRGB());
 
         StringBuilder sb = new StringBuilder();
         for (String module : modules) {
+            // Discord only allows 25 fields in an embed
+            if (fieldCount > 25)
+                continue;
             sb.setLength(0);
 
-            for (CustomCommand command : manager.getCommands().stream().filter(c -> c.getModule().equals(module)).collect(Collectors.toList())) {
-                // TODO Do not block on this and make it better
-                Boolean hasPermission = cc.getMember()
-                        .flatMapMany(Member::getRoles)
-                        .map(Role::getPermissions)
-                        .filter(permissions -> permissions.containsAll(command.getPermissions()))
-                        .hasElements()
-                        .block();
-
-                if (hasPermission == null || hasPermission.equals(Boolean.FALSE)) {
-                    continue;
-                }
+            // Get all commands of this module
+            manager.getCommands().stream().filter(c -> c.getModule().equals(module)).forEach(command -> {
                 if (command.isSecret()) {
-                    continue;
+                    return;
                 }
 
                 sb.append('`').append(commandPrefix).append(String.join(" ", command.getCommands())).append("` | ").append(command.getDescription()).append('\n');
-            }
+            });
+
+            // Discord only allows field descriptions to be 1024 characters
             if (sb.length() > 1024) {
                 sb.setLength(1024);
             }
-
-            //if (embed.getTotalVisibleCharacters() + sb.length() + module.length() >= 6000)
-            //    continue;
 
             if (module.length() == 0 || sb.length() == 0) {
                 continue;
             }
 
-            send = true;
+            fieldCount++;
             embed.addField(module, sb.toString(), false);
         }
-        if (send) {
+        if (fieldCount > 0) {
             cc.replyWith(embed).subscribe();
         } else {
             cc.replyWith("No available commands.").subscribe();

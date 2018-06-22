@@ -28,6 +28,7 @@ public class CommandManager {
     private DiscordClient client;
     private List<CustomCommand> commands = new ArrayList<>();
     private Map<Long, String> commandPrefixes = new HashMap<>();
+    private CustomCommand helpCommand;
 
     /**
      * Initialize Command API
@@ -63,7 +64,8 @@ public class CommandManager {
                 .collect(Collectors.toList()));
 
         // Register our help command
-        registerCommand(new HelpCommand(this));
+        helpCommand = new HelpCommand(this);
+        registerCommand(helpCommand);
 
         // Register our command listener
         CommandListener commandListener = new CommandListener(this, client);
@@ -99,7 +101,11 @@ public class CommandManager {
     }
 
     public void disableHelpCommand() {
-        commands.removeIf(command -> command.getCommands().equals(Collections.singletonList("help")));
+        unregisterCommand(helpCommand);
+    }
+
+    public void unregisterCommand(CustomCommand command) {
+        commands.remove(command);
     }
 
     public void onCommandExecution(Consumer<CommandContext> consumer) {
@@ -141,7 +147,6 @@ public class CommandManager {
     }
 
     private void sortCommands() {
-        commands.sort(Comparator
-                .comparing(c -> (c.getModule() + " " + String.join(" ", c.getCommands()))));
+        commands.sort(Comparator.comparing(c -> (c.getModule() + " " + String.join(" ", c.getCommands()))));
     }
 }

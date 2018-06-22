@@ -31,7 +31,7 @@ class CommandListener {
                         .map(rawCommand -> manager.getCommands()
                                 .stream()
                                 .filter(command -> command.getCommands().size() <= rawCommand.split(" ").length)
-                                .filter(command -> matches(command, message.getContent().get()))
+                                .filter(command -> matches(command, rawCommand))
                                 .reduce((first, second) -> second)))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
@@ -39,18 +39,15 @@ class CommandListener {
     }
 
     private boolean matches(CustomCommand customCommand, String userCommand) {
-        String userBaseCommand = userCommand.substring(1, userCommand.indexOf(" ") > 0 ? userCommand.indexOf(" ") : userCommand.length());
+        String userBaseCommand = userCommand.substring(0, userCommand.indexOf(" ") > 0 ? userCommand.indexOf(" ") : userCommand.length());
 
         for (int i = 0; i < customCommand.getCommands().size(); i++) {
             if (i == 0) {  // Checking the base command
-                if (!(customCommand.getCommands().get(0).equalsIgnoreCase(userBaseCommand) || (customCommand.getAliases().size() > 0 && customCommand.getAliases()
-                        .stream()
-                        .anyMatch(a -> a.equalsIgnoreCase(userBaseCommand))))) {
+                if (!(customCommand.getCommands().get(0).equalsIgnoreCase(userBaseCommand) || (customCommand.getAliases().size() > 0 && customCommand.getAliases().stream().anyMatch(a -> a.equalsIgnoreCase(userBaseCommand))))) {
                     return false;
                 }
             } else {  // Check the sub commands
-                if (!customCommand.getCommands().get(i)
-                        .equalsIgnoreCase(userCommand.split(" ")[i])) {
+                if (!customCommand.getCommands().get(i).equalsIgnoreCase(userCommand.split(" ")[i])) {
                     return false;
                 }
             }

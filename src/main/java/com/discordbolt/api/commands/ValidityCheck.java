@@ -99,7 +99,6 @@ class ValidityCheck {
                 .map(permissionSet -> permissionSet.containsAll(command.getPermissions())))
                 .switchIfEmpty(Mono.just(CheckResult.INVALID_PERMISSION));
 
-        return directMessage.filter(checkResult -> checkResult != CheckResult.VALID)
-                .switchIfEmpty(permissionCheck);
+        return directMessage.filter(checkResult -> checkResult != CheckResult.VALID).switchIfEmpty(permissionCheck);
     }
 }
