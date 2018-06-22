@@ -4,6 +4,7 @@ import discord4j.core.DiscordClient;
 import discord4j.core.object.entity.Guild;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,7 +12,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -28,7 +28,6 @@ public class CommandManager {
     private DiscordClient client;
     private List<CustomCommand> commands = new ArrayList<>();
     private Map<Long, String> commandPrefixes = new HashMap<>();
-    private volatile Consumer<CommandContext> consumer;
 
     /**
      * Initialize Command API
@@ -42,30 +41,29 @@ public class CommandManager {
         // Save DiscordClient
         this.client = client;
 
+        // Set the command manager
+        CustomCommand.setCommandManager(this);
+
         // Get all public static methods with @BotCommand and create CustomCommand objects
         commands.addAll(new Reflections(packagePrefix, new MethodAnnotationsScanner())
                 .getMethodsAnnotatedWith(BotCommand.class)
                 .stream()
                 .filter(method -> Modifier.isStatic(method.getModifiers()))
                 .filter(method -> Modifier.isPublic(method.getModifiers()))
-                .map(method -> {
-                    try {
-                        return new CustomCommand(this, method);
-                    } catch (IllegalStateException e) {
-                        LOGGER.error("Exception while creating command \"" + String
-                                .join(" ", method.getAnnotation(BotCommand.class)
-                                        .command()) + "\"", e);
-                        return null;
+                .map(method -> new CustomCommand(method.getAnnotation(BotCommand.class)) {
+                    @Override
+                    public void execute(CommandContext commandContext) {
+                        try {
+                            method.invoke(null, commandContext);
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            LOGGER.error("Unable to execute command \"" + String.join(" ", commandContext.getCustomCommand().getCommands()) + "\"", e);
+                        }
                     }
                 })
-                .filter(Objects::nonNull)
                 .collect(Collectors.toList()));
 
         // Register our help command
         registerCommand(new HelpCommand(this));
-
-        // Sort all registered commands for the Help Module
-        sortCommands();
 
         // Register our command listener
         CommandListener commandListener = new CommandListener(this, client);
@@ -81,8 +79,8 @@ public class CommandManager {
         }
     }
 
-    public void registerCommand(Command command) {
-        commands.add(new CustomCommand(this, command));
+    public void registerCommand(CustomCommand command) {
+        commands.add(command);
         sortCommands();
     }
 
@@ -101,17 +99,11 @@ public class CommandManager {
     }
 
     public void disableHelpCommand() {
-        commands.removeIf(
-                command -> command.getCommands().equals(Collections.singletonList("help")));
+        commands.removeIf(command -> command.getCommands().equals(Collections.singletonList("help")));
     }
 
     public void onCommandExecution(Consumer<CommandContext> consumer) {
-        this.consumer = consumer;
-    }
-
-    Consumer<CommandContext> getCommandConsumer() {
-        return consumer != null ? consumer : (c) -> {
-        };
+        CustomCommand.setCommandConsumer(consumer);
     }
 
     /**

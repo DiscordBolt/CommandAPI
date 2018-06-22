@@ -10,180 +10,96 @@ import static com.discordbolt.api.commands.ValidityCheck.channelNameWhitelist;
 import static com.discordbolt.api.commands.ValidityCheck.channelWhitelist;
 import static com.discordbolt.api.commands.ValidityCheck.permission;
 
-import com.discordbolt.api.commands.exceptions.CommandException;
-import com.discordbolt.api.commands.exceptions.ExceptionMessage;
-import discord4j.core.object.entity.Guild;
+import com.sun.istack.internal.NotNull;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.util.Permission;
 import discord4j.core.object.util.PermissionSet;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-class CustomCommand {
+public abstract class CustomCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomCommand.class);
 
-    private CommandManager manager;
+    private static Consumer<CommandContext> commandConsumer;
+    private static CommandManager manager;
 
     private List<String> command;
 
-    private Method method;
-    private Command commandClass;
+    private String description = "";
+    private String usage = "";
+    private String module = "";
 
-    private String description;
-    private String usage;
-    private String module;
     private Set<String> aliases = new HashSet<>();
-    private Set<String> channelNameWhitelist = new HashSet<>();
-    private Set<String> channelNameBlacklist = new HashSet<>();
     private Set<Long> channelWhitelist = new HashSet<>();
     private Set<Long> channelBlacklist = new HashSet<>();
+    private Set<String> channelNameWhitelist = new HashSet<>();
+    private Set<String> channelNameBlacklist = new HashSet<>();
     private PermissionSet permissions = PermissionSet.none();
-    private int[] argRange;
-    private boolean secret;
-    private boolean allowDM;
-    private boolean delete;
+    private int[] argRange = new int[]{0, Integer.MAX_VALUE};
+    private boolean secret, allowDM, deleteTrigger;
 
-    CustomCommand(CommandManager manager, Method method) throws IllegalStateException {
-        this.manager = manager;
-
-        BotCommand annotation = method.getAnnotation(BotCommand.class);
-        this.command = Arrays.stream(annotation.command())
-                .map(String::toLowerCase)
-                .collect(Collectors.toList());
-        this.method = method;
-        this.module = annotation.module();
-        this.description = annotation.description();
-        this.usage = annotation.usage();
-        this.aliases.addAll(Arrays.asList(annotation.aliases()));
-        this.channelWhitelist.addAll(Arrays.stream(annotation.channelWhitelist())
-                .boxed()
-                .collect(Collectors.toList()));
-        this.channelNameWhitelist.addAll(Arrays.asList(annotation.channelNameWhitelist()));
-        this.channelBlacklist.addAll(Arrays.stream(annotation.channelBlacklist())
-                .boxed()
-                .collect(Collectors.toList()));
-        this.channelNameBlacklist.addAll(Arrays.asList(annotation.channelNameBlacklist()));
-        this.permissions = PermissionSet.of(annotation.permissions());
-        this.argRange = annotation.args();
-        this.secret = annotation.secret();
-        this.allowDM = annotation.allowDM();
-        this.delete = annotation.deleteCommandMessage();
-
-        if (argRange.length >= 1 && getCommands().size() > argRange[0]) {
-            throw new IllegalStateException(
-                    "Too many subcommands for given arg count. Command: " + String
-                            .join(" ", getCommands()));
-        }
-
-        if (argRange.length >= 2 && argRange[0] > argRange[1]) {
-            throw new IllegalStateException("Argument range is invalid! Command: " + String
-                    .join(" ", getCommands()));
-        }
-
-        if (allowDM && !permissions.isEmpty()) {
-            throw new IllegalStateException(
-                    "Can not execute command in DMs that require permissions. Command: " +
-                            String
-                                    .join(" ", getCommands()));
-        }
+    CustomCommand(BotCommand a) {
+        this(a.command(), a.description(), a.usage(), a.module());
+        setAliases(a.aliases());
+        setChannelWhitelist(a.channelWhitelist());
+        setChannelBlacklist(a.channelBlacklist());
+        setChannelNameWhitelist(a.channelNameWhitelist());
+        setChannelNameBlacklist(a.channelNameBlacklist());
+        setPermissions(a.permissions());
+        setMinArgumentCount(a.args()[0]);
+        setMaxArgumentCount(a.args()[1]);
+        setSecret(a.secret());
+        setAllowDM(a.allowDM());
+        setDeleteCommandMessage(a.deleteCommandMessage());
     }
 
-    CustomCommand(CommandManager manager, Command command) {
-        this.manager = manager;
-
-        this.commandClass = command;
-
-        this.command = Arrays.stream(commandClass.getCommand())
-                .map(String::toLowerCase)
-                .collect(Collectors.toList());
-        this.module = commandClass.getModule();
-        this.description = commandClass.getDescription();
-        this.usage = commandClass.getUsage();
-        this.aliases.addAll(Arrays.asList(commandClass.getAliases()));
-        this.channelWhitelist.addAll(Arrays.stream(commandClass.getChannelWhitelist())
-                .boxed()
-                .collect(Collectors.toList()));
-        this.channelNameWhitelist.addAll(Arrays.asList(commandClass.getChannelNameWhitelist()));
-        this.channelBlacklist.addAll(Arrays.stream(commandClass.getChannelBlacklist())
-                .boxed()
-                .collect(Collectors.toList()));
-        this.channelNameBlacklist.addAll(Arrays.asList(commandClass.getChannelNameBlacklist()));
-        this.permissions = PermissionSet.of(commandClass.getPermissions());
-        this.argRange = commandClass.getArgs();
-        this.secret = commandClass.isSecret();
-        this.allowDM = commandClass.isAllowDM();
-        this.delete = commandClass.isDeleteCommandMessage();
-
-        if (argRange.length >= 1 && getCommands().size() > argRange[0]) {
-            throw new IllegalStateException(
-                    "Too many subcommands for given arg count. Command: " + String
-                            .join(" ", getCommands()));
-        }
-
-        if (argRange.length >= 2 && argRange[0] > argRange[1]) {
-            throw new IllegalStateException("Argument range is invalid! Command: " + String
-                    .join(" ", getCommands()));
-        }
-
-        if (allowDM && !permissions.isEmpty()) {
-            throw new IllegalStateException(
-                    "Can not execute command in DMs that require permissions. Command: " +
-                            String
-                                    .join(" ", getCommands()));
-        }
+    public CustomCommand(@NotNull String[] command, @NotNull String description, @NotNull String usage, @NotNull String module) {
+        this(command);
+        setDescription(description);
+        setUsage(usage);
+        setModule(module);
     }
 
-    CommandManager getCommandManager() {
-        return manager;
+    /**
+     * Constructor for creating a new CustomCommand without details for !Help command
+     */
+    public CustomCommand(@NotNull String[] command) {
+        this.command = Arrays.stream(command).map(String::toLowerCase).collect(Collectors.toList());
+    }
+
+    static void setCommandConsumer(Consumer<CommandContext> consumer) {
+        CustomCommand.commandConsumer = consumer;
+    }
+
+    static void setCommandManager(CommandManager manager) {
+        CustomCommand.manager = manager;
     }
 
     public List<String> getCommands() {
         return Collections.unmodifiableList(command);
     }
 
-    public String getBaseCommand() {
-        return getCommands().get(0);
-    }
-
-    public String getModule() {
-        return module;
-    }
-
     public String getDescription() {
         return description;
     }
 
-    public String getUsage(Guild guild) {
-        return manager.getCommandPrefix(guild) + String.join(" ", getCommands()) + usage;
+    public String getUsage() {
+        return usage;
     }
 
-    public Optional<Integer> getMinimumArgCount() {
-        if (argRange.length >= 1) {
-            return Optional.of(argRange[0]);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    public Optional<Integer> getMaximumArgCount() {
-        if (argRange.length == 1) {
-            return Optional.of(argRange[0]);
-        } else if (argRange.length >= 2) {
-            return Optional.of(argRange[1]);
-        } else {
-            return Optional.empty();
-        }
+    public String getModule() {
+        return module;
     }
 
     public Set<String> getAliases() {
@@ -210,6 +126,14 @@ class CustomCommand {
         return permissions;
     }
 
+    public int getMinArgCount() {
+        return argRange[0];
+    }
+
+    public int getMaxArgCount() {
+        return argRange[1];
+    }
+
     public boolean isSecret() {
         return secret;
     }
@@ -218,14 +142,82 @@ class CustomCommand {
         return allowDM;
     }
 
-    public boolean shouldDeleteMessages() {
-        return delete;
+    public boolean shouldDeleteTrigger() {
+        return deleteTrigger;
+    }
+
+    public CustomCommand setDescription(String description) {
+        this.description = description;
+        return this;
+    }
+
+    public CustomCommand setUsage(String usage) {
+        this.usage = usage;
+        return this;
+    }
+
+    public CustomCommand setModule(String module) {
+        this.module = module;
+        return this;
+    }
+
+    public CustomCommand setAliases(String... aliases) {
+        this.aliases = Arrays.stream(aliases).map(String::toLowerCase).collect(Collectors.toSet());
+        return this;
+    }
+
+    public CustomCommand setChannelWhitelist(long... channelWhitelist) {
+        this.channelWhitelist = LongStream.of(channelWhitelist).boxed().collect(Collectors.toSet());
+        return this;
+    }
+
+    public CustomCommand setChannelBlacklist(long... channelBlacklist) {
+        this.channelBlacklist = LongStream.of(channelBlacklist).boxed().collect(Collectors.toSet());
+        return this;
+    }
+
+    public CustomCommand setChannelNameWhitelist(String... channelNameWhitelist) {
+        Collections.addAll(this.channelNameWhitelist, channelNameWhitelist);
+        return this;
+    }
+
+    public CustomCommand setChannelNameBlacklist(String... channelNameBlacklist) {
+        Collections.addAll(this.channelNameBlacklist, channelNameBlacklist);
+        return this;
+    }
+
+    public CustomCommand setPermissions(Permission... permissions) {
+        this.permissions = PermissionSet.of(permissions);
+        return this;
+    }
+
+    public CustomCommand setMinArgumentCount(int minArgumentCount) {
+        this.argRange[0] = minArgumentCount;
+        return this;
+    }
+
+    public CustomCommand setMaxArgumentCount(int maxArgumentCount) {
+        this.argRange[1] = maxArgumentCount;
+        return this;
+    }
+
+    public CustomCommand setSecret(boolean secret) {
+        this.secret = secret;
+        return this;
+    }
+
+    public CustomCommand setAllowDM(boolean allowDM) {
+        this.allowDM = allowDM;
+        return this;
+    }
+
+    public CustomCommand setDeleteCommandMessage(boolean deleteCommandMessage) {
+        this.deleteTrigger = deleteCommandMessage;
+        return this;
     }
 
     private Flux<ValidityCheck.CheckResult> allPreChecks(CommandContext commandContext) {
-        return Flux.concat(isAllowedChannel(commandContext), isValidArgumentCount(commandContext),
-                hasPermission
-                        (commandContext));
+        return Flux.concat(isAllowedChannel(commandContext), isValidArgumentCount(commandContext), hasPermission(commandContext));
     }
 
     private Flux<ValidityCheck.CheckResult> isAllowedChannel(CommandContext commandContext) {
@@ -235,12 +227,15 @@ class CustomCommand {
     }
 
     private Flux<ValidityCheck.CheckResult> isValidArgumentCount(CommandContext commandContext) {
-        return Flux.concat(argumentLowerBound(this, commandContext),
-                argumentUpperBound(this, commandContext));
+        return Flux.concat(argumentLowerBound(this, commandContext), argumentUpperBound(this, commandContext));
     }
 
     private Flux<ValidityCheck.CheckResult> hasPermission(CommandContext commandContext) {
         return Flux.concat(permission(this, commandContext));
+    }
+
+    CommandManager getCommandManager() {
+        return manager;
     }
 
     void preexec(Message message) {
@@ -248,43 +243,24 @@ class CustomCommand {
 
         allPreChecks(cc).filter(checkResult -> checkResult != CheckResult.VALID)
                 .next()
-                .map(CheckResult::getMessage)
-                .flatMap(cc::replyWith)
-                .switchIfEmpty(this.executeCommand(cc))
+                .flatMap(checkResult -> {
+                    if (checkResult == CheckResult.VALID) {
+                        this.execute(cc);
+                        return Mono.empty();
+                    } else {
+                        return cc.replyWith(checkResult.getMessage());
+                    }
+                })
                 .doFinally(signal -> {
-                    if (shouldDeleteMessages()) {
+                    if (shouldDeleteTrigger()) {
                         message.delete().subscribe();
                     }
-                    if (manager.getCommandConsumer() != null) {
-                        manager.getCommandConsumer().accept(cc);
+                    if (commandConsumer != null) {
+                        commandConsumer.accept(cc);
                     }
                 })
                 .subscribe();
     }
 
-    private Mono<Message> executeCommand(CommandContext commandContext) {
-        try {
-            if (method != null) {
-                method.invoke(null, commandContext);
-            } else {
-                commandClass.execute(commandContext);
-            }
-            return Mono.empty();
-        } catch (InvocationTargetException ite) {
-            if (ite.getCause() instanceof CommandException) {
-                return commandContext.replyWith(ite.getCause().getMessage());
-            } else {
-                LOGGER.error("Uncaught exception during execution of command \"" + String
-                        .join(" ", getCommands()) +
-                        "\".");
-                LOGGER.error(ite.getCause().getMessage());
-                LOGGER.debug(ite.getCause().getMessage(), ite.getCause());
-                return commandContext.replyWith(ExceptionMessage.COMMAND_PROCESS_EXCEPTION);
-            }
-        } catch (IllegalAccessException ex) {
-            LOGGER.error(ex.getMessage());
-            LOGGER.debug(ex.getMessage(), ex);
-            return commandContext.replyWith(ExceptionMessage.COMMAND_PROCESS_EXCEPTION);
-        }
-    }
+    public abstract void execute(CommandContext commandContext);
 }

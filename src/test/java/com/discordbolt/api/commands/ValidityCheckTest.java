@@ -13,7 +13,6 @@ import discord4j.core.object.util.PermissionSet;
 import discord4j.core.object.util.Snowflake;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
@@ -219,20 +218,16 @@ public class ValidityCheckTest {
         Mockito.when(commandContext.getArgCount()).thenReturn(5);
 
         // No lower argument bound (valid)
-        Mockito.when(customCommand.getMinimumArgCount()).thenReturn(Optional.empty());
-        assertThat(ValidityCheck.argumentLowerBound(customCommand, commandContext).block(),
-                equalTo(CheckResult.VALID));
+        Mockito.when(customCommand.getMinArgCount()).thenReturn(0);
+        assertThat(ValidityCheck.argumentLowerBound(customCommand, commandContext).block(), equalTo(CheckResult.VALID));
 
         // Above lower argument bound (valid)
-        Mockito.when(customCommand.getMinimumArgCount()).thenReturn(Optional.of(3));
-        assertThat(ValidityCheck.argumentLowerBound(customCommand, commandContext).block(),
-                equalTo(CheckResult.VALID));
+        Mockito.when(customCommand.getMinArgCount()).thenReturn(3);
+        assertThat(ValidityCheck.argumentLowerBound(customCommand, commandContext).block(), equalTo(CheckResult.VALID));
 
         // Below lower argument bound (fail)
-        Mockito.when(customCommand.getMinimumArgCount()).thenReturn(Optional.of(10));
-        assertThat(ValidityCheck.argumentLowerBound(customCommand, commandContext).block(),
-                equalTo(CheckResult
-                        .TOO_FEW_ARGUMENTS));
+        Mockito.when(customCommand.getMinArgCount()).thenReturn(10);
+        assertThat(ValidityCheck.argumentLowerBound(customCommand, commandContext).block(), equalTo(CheckResult.TOO_FEW_ARGUMENTS));
     }
 
     @Test
@@ -240,20 +235,16 @@ public class ValidityCheckTest {
         Mockito.when(commandContext.getArgCount()).thenReturn(20);
 
         // No upper argument bound (valid)
-        Mockito.when(customCommand.getMaximumArgCount()).thenReturn(Optional.empty());
-        assertThat(ValidityCheck.argumentUpperBound(customCommand, commandContext).block(),
-                equalTo(CheckResult.VALID));
+        Mockito.when(customCommand.getMaxArgCount()).thenReturn(Integer.MAX_VALUE);
+        assertThat(ValidityCheck.argumentUpperBound(customCommand, commandContext).block(), equalTo(CheckResult.VALID));
 
         // Below upper argument bound (valid)
-        Mockito.when(customCommand.getMaximumArgCount()).thenReturn(Optional.of(25));
-        assertThat(ValidityCheck.argumentUpperBound(customCommand, commandContext).block(),
-                equalTo(CheckResult.VALID));
+        Mockito.when(customCommand.getMaxArgCount()).thenReturn(25);
+        assertThat(ValidityCheck.argumentUpperBound(customCommand, commandContext).block(), equalTo(CheckResult.VALID));
 
         // Above upper argument bound (fail)
-        Mockito.when(customCommand.getMaximumArgCount()).thenReturn(Optional.of(10));
-        assertThat(ValidityCheck.argumentUpperBound(customCommand, commandContext).block(),
-                equalTo(CheckResult
-                        .TOO_MANY_ARGUMENTS));
+        Mockito.when(customCommand.getMaxArgCount()).thenReturn(10);
+        assertThat(ValidityCheck.argumentUpperBound(customCommand, commandContext).block(), equalTo(CheckResult.TOO_MANY_ARGUMENTS));
     }
 
     /**

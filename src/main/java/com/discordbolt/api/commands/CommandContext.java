@@ -8,6 +8,7 @@ import discord4j.core.object.entity.PrivateChannel;
 import discord4j.core.object.entity.User;
 import discord4j.core.spec.EmbedCreateSpec;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import reactor.core.publisher.Mono;
 
@@ -19,18 +20,12 @@ public class CommandContext {
 
     CommandContext(Message message, CustomCommand customCommand) {
         this.message = message;
-        getGuild().subscribe(
-                guild -> this.arguments = Arrays.asList(getMessageContent().substring(customCommand
-                        .getCommandManager().getCommandPrefix(guild).length()).split(" ")));
+        getGuild().subscribe(guild -> this.arguments = Arrays.asList(getMessageContent().substring(customCommand.getCommandManager().getCommandPrefix(guild).length()).split(" ")));
         this.customCommand = customCommand;
     }
 
-    /**
-     * Get a list of strings that represent the command executed. This does not contain user
-     * supplied arguments
-     */
-    public List<String> getCommand() {
-        return customCommand.getCommands();
+    public CustomCommand getCustomCommand() {
+        return customCommand;
     }
 
     public Message getMessage() {
@@ -62,16 +57,8 @@ public class CommandContext {
         return message.getContent().get();
     }
 
-    public String getUserBaseCommand() {
-        return arguments.get(0);
-    }
-
     public List<String> getArguments() {
-        return arguments;
-    }
-
-    public String getArgument(int index) {
-        return arguments.get(index);
+        return Collections.unmodifiableList(arguments);
     }
 
     public int getArgCount() {
@@ -80,9 +67,9 @@ public class CommandContext {
 
     public String combineArgs(int lowIndex, int highIndex) {
         StringBuilder sb = new StringBuilder();
-        sb.append(getArgument(lowIndex));
+        sb.append(getArguments().get(lowIndex));
         for (int i = lowIndex + 1; i <= highIndex; i++) {
-            sb.append(' ').append(getArgument(i));
+            sb.append(' ').append(getArguments().get(i));
         }
 
         return sb.toString();
@@ -95,8 +82,7 @@ public class CommandContext {
      * @param message Message to send
      */
     public Mono<Message> replyWith(String message) {
-        return getChannel()
-                .flatMap(channel -> channel.createMessage(spec -> spec.setContent(message)));
+        return getChannel().flatMap(channel -> channel.createMessage(spec -> spec.setContent(message)));
     }
 
     /**
@@ -117,8 +103,7 @@ public class CommandContext {
      * @param embed Embed to send
      */
     public Mono<Message> replyWith(String message, EmbedCreateSpec embed) {
-        return getChannel().flatMap(
-                channel -> channel.createMessage(spec -> spec.setContent(message).setEmbed(embed)));
+        return getChannel().flatMap(channel -> channel.createMessage(spec -> spec.setContent(message).setEmbed(embed)));
     }
 
     /**
@@ -126,6 +111,6 @@ public class CommandContext {
      * will be sent.
      */
     public Mono<Message> sendUsage() {
-        return getGuild().map(customCommand::getUsage).flatMap(this::replyWith);
+        return getGuild().map(guild -> customCommand.getCommandManager().getCommandPrefix(guild)).map(prefix -> prefix + customCommand.getUsage()).flatMap(this::replyWith);
     }
 }

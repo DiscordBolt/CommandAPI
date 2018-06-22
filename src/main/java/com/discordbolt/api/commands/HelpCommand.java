@@ -7,37 +7,28 @@ import java.awt.Color;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class HelpCommand extends Command {
+public class HelpCommand extends CustomCommand {
 
     private static String[] command = {"help"};
-    private static String description = "View all commands";
-    private static String usage = "Help";
-    private static String module = "Commands";
 
     private CommandManager manager;
 
     HelpCommand(CommandManager manager) {
-        super(command, description, usage, module);
+        super(command);
         this.manager = manager;
         super.setSecret(true);
-        super.setAliases(new String[]{"h"});
+        super.setAliases("h");
     }
 
+    @Override
     public void execute(CommandContext cc) {
-        List<String> modules = manager.getCommands()
-                .stream()
-                .map(CustomCommand::getModule)
-                .distinct()
-                .collect(Collectors.toList());
+        List<String> modules = manager.getCommands().stream().map(CustomCommand::getModule).distinct().collect(Collectors.toList());
 
         if (cc.getArgCount() > 1) {
             String userRequestedModule = cc.combineArgs(1, cc.getArgCount() - 1);
-            modules = modules.stream()
-                    .filter(s -> s.equalsIgnoreCase(userRequestedModule))
-                    .collect(Collectors.toList());
+            modules = modules.stream().filter(s -> s.equalsIgnoreCase(userRequestedModule)).collect(Collectors.toList());
             if (modules.size() < 1) {
-                cc.replyWith("No modules found matching \"" + userRequestedModule + "\".")
-                        .subscribe();
+                cc.replyWith("No modules found matching \"" + userRequestedModule + "\".").subscribe();
                 return;
             }
         }
@@ -52,10 +43,7 @@ public class HelpCommand extends Command {
         for (String module : modules) {
             sb.setLength(0);
 
-            for (CustomCommand command : manager.getCommands()
-                    .stream()
-                    .filter(c -> c.getModule().equals(module))
-                    .collect(Collectors.toList())) {
+            for (CustomCommand command : manager.getCommands().stream().filter(c -> c.getModule().equals(module)).collect(Collectors.toList())) {
                 // TODO Do not block on this and make it better
                 Boolean hasPermission = cc.getMember()
                         .flatMapMany(Member::getRoles)
@@ -71,12 +59,7 @@ public class HelpCommand extends Command {
                     continue;
                 }
 
-                sb.append('`')
-                        .append(commandPrefix)
-                        .append(String.join(" ", command.getCommands()))
-                        .append("` | ")
-                        .append(command.getDescription())
-                        .append('\n');
+                sb.append('`').append(commandPrefix).append(String.join(" ", command.getCommands())).append("` | ").append(command.getDescription()).append('\n');
             }
             if (sb.length() > 1024) {
                 sb.setLength(1024);
