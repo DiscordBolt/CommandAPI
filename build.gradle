@@ -40,10 +40,10 @@ dependencies {
 
 task defineVersion(dependsOn: processResources) {
     doLast {
-        file("$buildDir/resources/main/application.properties").withWriter { w ->
+        file("$buildDir/resources/main/commands.properties").withWriter { w ->
             Properties p = new Properties()
-            p.load(new FileInputStream(new File('src/main/resources/application.properties')))
-            p['commands.version'] = project.version.toString()
+            p.load(new FileInputStream(new File('src/main/resources/commands.properties')))
+            p['version'] = project.version.toString()
             p.store w, null
         }
     }

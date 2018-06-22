@@ -74,8 +74,8 @@ public class CommandManager {
     public String getVersion() {
         try {
             Properties prop = new Properties();
-            prop.load(new FileInputStream("application.properties"));
-            return prop.getProperty("commands.version");
+            prop.load(new FileInputStream("commands.properties"));
+            return prop.getProperty("version");
         } catch (IOException e) {
             return "SNAPSHOT";
         }
