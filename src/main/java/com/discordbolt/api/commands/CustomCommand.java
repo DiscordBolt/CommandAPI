@@ -251,8 +251,8 @@ public abstract class CustomCommand {
     void preexec(Message message) {
         CommandContext cc = new CommandContext(message, this);
 
-        allPreChecks(cc).filter(checkResult -> checkResult != CheckResult.VALID)
-                .next().log()
+        allPreChecks(cc).log().filter(checkResult -> checkResult != CheckResult.VALID)
+                .next()
                 .flatMap(checkResult -> {
                     LOGGER.info("checkResult=" + checkResult.name());
                     if (checkResult == CheckResult.VALID) {
