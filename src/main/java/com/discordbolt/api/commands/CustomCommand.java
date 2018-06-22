@@ -57,8 +57,12 @@ public abstract class CustomCommand {
         setChannelNameWhitelist(a.channelNameWhitelist());
         setChannelNameBlacklist(a.channelNameBlacklist());
         setPermissions(a.permissions());
-        setMinArgumentCount(a.args()[0]);
-        setMaxArgumentCount(a.args()[1]);
+        if (a.args().length == 1) {
+            setArgumentCount(a.args()[0]);
+        } else if (a.args().length == 2) {
+            setMinArgumentCount(a.args()[0]);
+            setMaxArgumentCount(a.args()[1]);
+        }
         setSecret(a.secret());
         setAllowDM(a.allowDM());
         setDeleteCommandMessage(a.deleteCommandMessage());
@@ -188,6 +192,12 @@ public abstract class CustomCommand {
 
     public CustomCommand setPermissions(Permission... permissions) {
         this.permissions = PermissionSet.of(permissions);
+        return this;
+    }
+
+    public CustomCommand setArgumentCount(int argumentCount) {
+        this.argRange[0] = argumentCount;
+        this.argRange[1] = argumentCount;
         return this;
     }
 
