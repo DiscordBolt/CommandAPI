@@ -252,8 +252,9 @@ public abstract class CustomCommand {
         CommandContext cc = new CommandContext(message, this);
 
         allPreChecks(cc).filter(checkResult -> checkResult != CheckResult.VALID)
-                .next()
+                .next().log()
                 .flatMap(checkResult -> {
+                    LOGGER.info("checkResult=" + checkResult.name());
                     if (checkResult == CheckResult.VALID) {
                         this.execute(cc);
                         return Mono.empty();
