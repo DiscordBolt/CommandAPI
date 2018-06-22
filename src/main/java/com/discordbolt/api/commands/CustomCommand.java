@@ -25,7 +25,6 @@ import java.util.stream.LongStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 
 public abstract class CustomCommand {
@@ -251,11 +250,12 @@ public abstract class CustomCommand {
 
     void preexec(Message message) {
         CommandContext cc = new CommandContext(message, this);
-        Hooks.onOperatorDebug();
-        allPreChecks(cc).log().filter(checkResult -> checkResult != CheckResult.VALID)
+
+        allPreChecks(cc)
+                .filter(checkResult -> checkResult != CheckResult.VALID)
                 .next()
+                .switchIfEmpty(Mono.just(CheckResult.VALID))
                 .flatMap(checkResult -> {
-                    LOGGER.info("checkResult=" + checkResult.name());
                     if (checkResult == CheckResult.VALID) {
                         this.execute(cc);
                         return Mono.empty();
