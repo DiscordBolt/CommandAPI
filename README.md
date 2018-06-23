@@ -6,7 +6,8 @@ CommandManager commandManager = new CommandManager(discordClient, "my.toplevel.p
 ```
 
 # Registering Commands
-Methods annotated with `@BotCommand` are automatically registered. Commands created via extending `CustomCommand` must be registered by hand.
+Methods annotated with `@BotCommand` are automatically registered.  
+Commands created via extending `CustomCommand` must be registered by hand.  
 ```java
 commandManager.registerCommand(new HelpCommand());
 ```
