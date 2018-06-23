@@ -31,7 +31,7 @@ public static void ping(CommandContext context) {
 }
 ```
 
-### `CustomCommand` Abstract Class Example
+### `CustomCommand` Class Example
 ```java
 public class HelpCommand extends CustomCommand {
 
