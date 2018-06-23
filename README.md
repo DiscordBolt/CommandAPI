@@ -12,8 +12,8 @@ commandManager.registerCommand(new HelpCommand());
 ```
 
 # Setting Command Prefixes
-Commands by default are prefixed by `!` but can be cutomized per guild. 
-Prefixes are not persistent and must be set on restart.
+Commands by default are prefixed by `!` but can be cutomized per guild.  
+Prefixes are not persistent and must be set on restart.  
 ```java
 commandManager.setCommandPrefix(guildID, "$");
 ```
@@ -21,8 +21,8 @@ commandManager.setCommandPrefix(guildID, "$");
 # Examples
 
 ### `@BotCommand` Annotation Example
-These methods must be `public` and `static` in order to be registered. 
-They will be found automatically and regestered when you create `CommandManager`
+These methods must be `public` and `static` in order to be registered.   
+They will be found automatically and regestered when you create `CommandManager`  
 ```java
 @BotCommand(command = "ping", description = "ping", usage = "ping", module = "misc")
 public static void ping(CommandContext context) {
