@@ -51,3 +51,20 @@ public class HelpCommand extends CustomCommand {
     }
 }
 ```
+Or with no details for the !Help command:
+```java
+public class HelpCommand extends CustomCommand {
+
+    private static String[] command = {"help"};
+
+    public HelpCommand() {
+        super(command);
+        super.setAliases("h");
+    }
+
+    @Override
+    public void execute(CommandContext cc) {
+        cc.replyWith("Command List:").subscribe();
+    }
+}
+```
