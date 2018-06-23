@@ -72,5 +72,3 @@ public class HelpCommand extends CustomCommand {
     }
 }
 ```
-
-
