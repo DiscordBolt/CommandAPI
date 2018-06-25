@@ -74,6 +74,8 @@ public class CommandManager {
         try {
             Properties prop = new Properties();
             prop.load(this.getClass().getResourceAsStream("/application.properties"));
+            LOGGER.info("Loaded application.properties");
+            LOGGER.info(String.join(" ", prop.stringPropertyNames()));
             return prop.getProperty("version");
         } catch (IOException e) {
             return "SNAPSHOT";
