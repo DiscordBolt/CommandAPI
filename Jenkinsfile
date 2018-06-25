@@ -33,8 +33,13 @@ pipeline {
     stage('Deploy') {
       steps {
         echo 'Stage:Deploy'
-        archiveArtifacts(onlyIfSuccessful: true, artifacts: 'build/libs/*.jar')
       }
+    }
+  }
+  post {
+    always {
+      archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
+      junit 'build/reports/**/*.xml'
     }
   }
 }
