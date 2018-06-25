@@ -2,7 +2,6 @@ package com.discordbolt.api.commands;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.object.entity.Guild;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -11,7 +10,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.reflections.Reflections;
@@ -36,7 +34,7 @@ public class CommandManager {
      * @param packagePrefix package string where commands are located
      */
     public CommandManager(DiscordClient client, String packagePrefix) {
-        LOGGER.info("Initializing Command API version {}", getVersion());
+        LOGGER.info("Initializing Command API ");
 
         // Save DiscordClient
         this.client = client;
@@ -68,18 +66,6 @@ public class CommandManager {
 
         // Register our command listener
         CommandListener commandListener = new CommandListener(this, client);
-    }
-
-    public String getVersion() {
-        try {
-            Properties prop = new Properties();
-            prop.load(CommandManager.class.getResourceAsStream("/application.properties"));
-            LOGGER.info("Loaded application.properties");
-            LOGGER.info(String.join(" ", prop.stringPropertyNames()));
-            return prop.getProperty("version");
-        } catch (IOException e) {
-            return "SNAPSHOT";
-        }
     }
 
     public void registerCommand(CustomCommand command) {

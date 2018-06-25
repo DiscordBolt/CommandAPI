@@ -45,21 +45,6 @@ dependencies {
     testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
 }
 
-task defineVersion(dependsOn: processResources) {
-    doLast {
-        file("$buildDir/resources/main/application.properties").withWriter { w ->
-            Properties p = new Properties()
-            p.load(new FileInputStream(new File('src/main/resources/application.properties')))
-            p['version'] = project.version.toString()
-            p.store w, null
-        }
-    }
-}
-
-classes {
-    dependsOn defineVersion
-}
-
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
