@@ -1,24 +1,74 @@
 # CommandAPI
 
-## Setup/Usage
-### Initalization
-```java
-CommandManager manager = new CommandManager(client, "my.toplevel.package");
-```
-By creating a new command manager object, you are registering all of your commands under the `my.toplevel.package`. All subpackages will also be serached for commands and registered.
+# Javadocs
+[master](https://jitpack.io/com/github/DiscordBolt/CommandAPI/master-SNAPSHOT/javadoc/index.html)  
+[v2](https://jitpack.io/com/github/DiscordBolt/CommandAPI/v2-SNAPSHOT/javadoc/index.html)
 
-### Command Creation
+# Initialization
 ```java
-@BotCommand(command = "ping", description = "Get a response from the bot", usage = "ping", module = "Fun Commands")
-public static void helpCommand(CommandContext cc) {
-    cc.replyWith("pong!");
+CommandManager commandManager = new CommandManager(discordClient, "my.toplevel.package");
+```
+
+# Registering Commands
+Methods annotated with `@BotCommand` are automatically registered.  
+Commands created via extending `CustomCommand` must be registered by hand.  
+```java
+commandManager.registerCommand(new HelpCommand());
+```
+
+# Setting Command Prefixes
+Commands by default are prefixed by `!` but can be cutomized per guild.  
+Prefixes are not persistent and must be set on restart.  
+```java
+commandManager.setCommandPrefix(guildID, "$");
+```
+
+# Examples
+
+### `@BotCommand` Annotation Example
+These methods must be `public` and `static` in order to be registered.   
+They will be found automatically and regestered when you create `CommandManager`  
+```java
+@BotCommand(command = "ping", description = "ping", usage = "ping", module = "misc")
+public static void ping(CommandContext context) {
+    context.replyWith("Pong!").subscribe();
 }
 ```
-This is the basic setup for a command. The method **must** be static and its only parameter must be CommandContext. The access modifier, return type, method name all do not matter. Each required argument of the `@BotCommand` annotation is described below.
- - command: The command typed by the user. Can use an array such as `command = { "tag", "add" }` to create subcommands.
- - description: The description of what the command does. This information is used by the `!Help` command.
- - usage: This is how the command is used. There is no required format here, but this will be used by the `!Help` command to show users how to use the command.
- - module: This is used to group commands together in the `!Help` command.
- 
-## Dependency Management
-Check out [JitPack](https://jitpack.io/#DiscordBolt/CommandAPI) for instructions on how to incorporate this into your project.
+
+### `CustomCommand` Class Example
+```java
+public class HelpCommand extends CustomCommand {
+
+    private static String[] command = {"help"};
+    private static String description = "View all commands";
+    private static String usage = "help";
+    private static String module = "Command API";
+
+    public HelpCommand() {
+        super(command, description, usage, module);
+        super.setAliases("h");
+    }
+
+    @Override
+    public void execute(CommandContext cc) {
+        cc.replyWith("Command List:").subscribe();
+    }
+}
+```
+Or with no details for the !Help command:
+```java
+public class HelpCommand extends CustomCommand {
+
+    private static String[] command = {"help"};
+
+    public HelpCommand() {
+        super(command);
+        super.setAliases("h");
+    }
+
+    @Override
+    public void execute(CommandContext cc) {
+        cc.replyWith("Command List:").subscribe();
+    }
+}
+```
