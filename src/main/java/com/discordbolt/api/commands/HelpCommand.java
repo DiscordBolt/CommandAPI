@@ -35,7 +35,7 @@ class HelpCommand extends CustomCommand {
 
         int fieldCount = 0;
         EmbedCreateSpec embed = new EmbedCreateSpec();
-        embed.setColor(new Color(36, 153, 153).getRGB());
+        embed.setColor(new Color(36, 153, 153));
 
         StringBuilder sb = new StringBuilder();
         for (String module : modules) {
