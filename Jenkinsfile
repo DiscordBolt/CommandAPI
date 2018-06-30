@@ -1,3 +1,7 @@
+parameters { 
+  booleanParam(name: 'CHECK_STAGE_UNSTABLE', defaultValue: false, description: 'True if the check stage is unstable') 
+}
+
 void setBuildStatus(String message, String state, String context) {
   step([
       $class: "GitHubCommitStatusSetter",
@@ -48,11 +52,7 @@ pipeline {
         unstable {
           echo 'Stage Check is unstable... Setting Github build status'
           script {
-            if (isPRMergeBuild()) {
-              setBuildStatus("This commit has failed checks", "FAILURE", "continuous-integration/jenkins/pr-merge");
-            } else {
-              //TODO set build status for non PRs 
-            }
+            params.CHECK_STAGE_UNSTABLE = true;
           }
         }
       }
@@ -67,6 +67,18 @@ pipeline {
     always {
       archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
       junit 'build/test-results/**/*.xml'
+    }
+    cleanup {
+      script {
+        // Check if we need to change the status message
+        if (params.CHECK_STAGE_UNSTABLE) {
+          if (isPRMergeBuild()) {
+            setBuildStatus("This commit has failed checks", "FAILURE", "continuous-integration/jenkins/pr-merge");
+          } else {
+            //TODO set build status for non PRs 
+          }
+        }
+      }
     }
   }
 }
