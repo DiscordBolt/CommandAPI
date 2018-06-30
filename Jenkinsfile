@@ -1,11 +1,15 @@
-void setBuildStatus(String message, String state) {
+void setBuildStatus(String message, String state, String context) {
   step([
       $class: "GitHubCommitStatusSetter",
       reposSource: [$class: "ManuallyEnteredRepositorySource", url: "https://github.com/DiscordBolt/CommandAPI"],
-      contextSource: [$class: "ManuallyEnteredCommitContextSource", context: "ci/jenkins/build-status"],
+      contextSource: [$class: "ManuallyEnteredCommitContextSource", context: context],
       errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
       statusResultSource: [ $class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
   ]);
+}
+
+def isPRMergeBuild() {
+    return (env.BRANCH_NAME ==~ /^PR-\d+$/)
 }
 
 pipeline {
@@ -43,7 +47,11 @@ pipeline {
       post {
         unstable {
           echo 'Stage Check is unstable... Setting Github build status'
-          setBuildStatus("This commit has failed checks", "FAILURE");
+          if (isPRMergeBuild()) {
+            setBuildStatus("This commit has failed checks", "FAILURE", "continuous-integration/jenkins/pr-merge");
+          } else {
+            //TODO set build status for non PRs 
+          }
         }
       }
     }
