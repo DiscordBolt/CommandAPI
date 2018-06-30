@@ -47,10 +47,12 @@ pipeline {
       post {
         unstable {
           echo 'Stage Check is unstable... Setting Github build status'
-          if (isPRMergeBuild()) {
-            setBuildStatus("This commit has failed checks", "FAILURE", "continuous-integration/jenkins/pr-merge");
-          } else {
-            //TODO set build status for non PRs 
+          script {
+            if (isPRMergeBuild()) {
+              setBuildStatus("This commit has failed checks", "FAILURE", "continuous-integration/jenkins/pr-merge");
+            } else {
+              //TODO set build status for non PRs 
+            }
           }
         }
       }
