@@ -48,7 +48,7 @@ pipeline {
         unstable {
           echo 'Stage Check is unstable... Setting Github build status'
           setBuildStatus("This commit has failed checks", "FAILURE", "continuous-integration/jenkins/checks");
-          currentBuild.result='SUCCESS' // We do not want to fail the entire build for these checks
+          script { currentBuild.result='SUCCESS' } // We do not want to fail the entire build for these checks
         }
       }
     }
