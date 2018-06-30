@@ -1,7 +1,3 @@
-parameters { 
-  booleanParam(name: 'CHECK_STAGE_UNSTABLE', defaultValue: false, description: 'True if the check stage is unstable') 
-}
-
 void setBuildStatus(String message, String state, String context) {
   step([
       $class: "GitHubCommitStatusSetter",
@@ -51,9 +47,7 @@ pipeline {
       post {
         unstable {
           echo 'Stage Check is unstable... Setting Github build status'
-          script {
-            params.CHECK_STAGE_UNSTABLE = true;
-          }
+          sh 'echo STAGE_CHECK=UNSTABLE > status.txt'
         }
       }
     }
@@ -71,7 +65,9 @@ pipeline {
     cleanup {
       script {
         // Check if we need to change the status message
-        if (params.CHECK_STAGE_UNSTABLE) {
+        status = readFile('status.txt').trim()
+        if (status == 'STAGE_CHECK=UNSTABLE') {
+          echo 'Stage Check was unstable... Setting Github build status'
           if (isPRMergeBuild()) {
             setBuildStatus("This commit has failed checks", "FAILURE", "continuous-integration/jenkins/pr-merge");
           } else {
