@@ -42,7 +42,7 @@ pipeline {
       }
       post {
         unstable {
-          echo 'Stage Check is unstable... Setting Github build status"
+          echo 'Stage Check is unstable... Setting Github build status'
           setBuildStatus("This commit has failed checks", "FAILURE");
         }
       }
