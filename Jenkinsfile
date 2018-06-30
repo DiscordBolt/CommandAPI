@@ -28,7 +28,7 @@ pipeline {
     stage('Check') {
       steps {
         echo 'Stage:Check'
-        step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/target/checkstyle-result.xml', unstableTotalAll:'0'])
+        step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/src/test/resources/checkstyle.xml', unstableTotalAll:'0'])
       }
     }
     stage('Deploy') {
