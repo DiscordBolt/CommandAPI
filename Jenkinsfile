@@ -47,7 +47,7 @@ pipeline {
       post {
         unstable {
           echo 'Stage Check is unstable... Setting Github build status'
-          sh 'echo STAGE_CHECK=UNSTABLE > status.txt'
+          setBuildStatus("This commit has failed checks", "FAILURE", "continuous-integration/jenkins/checks");
         }
       }
     }
@@ -61,20 +61,6 @@ pipeline {
     always {
       archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
       junit 'build/test-results/**/*.xml'
-    }
-    cleanup {
-      script {
-        // Check if we need to change the status message
-        status = readFile('status.txt').trim()
-        if (status == 'STAGE_CHECK=UNSTABLE') {
-          echo 'Stage Check was unstable... Setting Github build status'
-          if (isPRMergeBuild()) {
-            setBuildStatus("This commit has failed checks", "FAILURE", "continuous-integration/jenkins/pr-merge");
-          } else {
-            //TODO set build status for non PRs 
-          }
-        }
-      }
     }
   }
 }
