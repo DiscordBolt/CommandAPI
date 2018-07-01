@@ -43,8 +43,9 @@ pipeline {
       steps {
         echo 'Stage:Check'
         step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml'])
+        echo "Checkstyle count: ${CHECKSTYLE_COUNT}"
         script {
-          echo "Checkstyle warning count: ${CHECKSTYLE_COUNT}"
+          //echo "Checkstyle warning count: ${CHECKSTYLE_COUNT}"
           if (CHECKSTYLE_COUNT > 0) {
             echo "Checkstyle has warnings"
             setBuildStatus("This commit has ${CHECKSTYLE_COUNT} warnings (${CHECKSTYLE_NEW} new)", "FAILURE", "continuous-integration/jenkins/checkstyle");
