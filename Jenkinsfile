@@ -43,12 +43,9 @@ pipeline {
       steps {
         echo 'Stage:Check'
         script {
-          try {
-            step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml', failedTotalAll:'0'])
-          } catch (err) {
-            echo 'Stage Check is unstable... Setting Github build status'
-            setBuildStatus("This commit has failed checks", "FAILURE", "continuous-integration/jenkins/checks");
-          }
+          CHECKSTYLE_RESULT = step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml'])
+          echo 'Checkstyle Result: ${CHECKSTYLE_RESULT}'
+          //setBuildStatus("This commit has failed checks", "FAILURE", "continuous-integration/jenkins/checks");
         } 
       }
     }
