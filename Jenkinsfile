@@ -43,7 +43,7 @@ pipeline {
       steps {
         echo 'Stage:Check'
         //script {
-          CHECKSTYLE_RESULT = step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml'])
+          def CHECKSTYLE_RESULT = step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml'])
           echo 'Checkstyle Result: ${CHECKSTYLE_RESULT}'
           //setBuildStatus("This commit has failed checks", "FAILURE", "continuous-integration/jenkins/checks");
         //} 
