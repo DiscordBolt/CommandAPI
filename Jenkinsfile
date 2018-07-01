@@ -43,7 +43,7 @@ pipeline {
       steps {
         echo 'Stage:Check'
         step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml'])
-        echo "Checkstyle count: ${CHECKSTYLE_COUNT}"
+        echo "Checkstyle count: ${env.CHECKSTYLE_COUNT}"
         script {
           //echo "Checkstyle warning count: ${CHECKSTYLE_COUNT}"
           if (CHECKSTYLE_COUNT > 0) {
