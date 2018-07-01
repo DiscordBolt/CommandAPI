@@ -56,7 +56,7 @@ pipeline {
       archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
       junit 'build/test-results/**/*.xml'
       
-      echo TokenMacro.expandAll( CHECKSTYLE_COUNT, "Checkstyle count: ${COUNT} );
+      echo TokenMacro.expandAll( CHECKSTYLE_COUNT, "Checkstyle count: ${COUNT}"
      /* script {
         //echo "Checkstyle warning count: ${CHECKSTYLE_COUNT}"
         if (CHECKSTYLE_COUNT > 0) {
