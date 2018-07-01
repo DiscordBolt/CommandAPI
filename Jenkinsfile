@@ -42,11 +42,13 @@ pipeline {
     stage('Check') {
       steps {
         echo 'Stage:Check'
-        //script {
-          def CHECKSTYLE_RESULT = step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml'])
-          echo 'Checkstyle Result: ${CHECKSTYLE_RESULT}'
-          //setBuildStatus("This commit has failed checks", "FAILURE", "continuous-integration/jenkins/checks");
-        //} 
+        step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml'])
+        script {
+          if (CHECKSTYLE_COUNT > 0) {
+            echo "Checkstyle has warnings"
+            setBuildStatus("This commit has ${CHECKSTYLE_COUNT} warnings (${CHECKSTYLE_NEW} new)", "FAILURE", "continuous-integration/jenkins/checkstyle");
+          }
+        }
       }
     }
     stage('Deploy') {
