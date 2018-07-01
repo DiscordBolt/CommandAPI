@@ -43,14 +43,6 @@ pipeline {
       steps {
         echo 'Stage:Check'
         step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml'])
-        echo "Checkstyle count: ${env.CHECKSTYLE_COUNT}"
-        script {
-          //echo "Checkstyle warning count: ${CHECKSTYLE_COUNT}"
-          if (CHECKSTYLE_COUNT > 0) {
-            echo "Checkstyle has warnings"
-            setBuildStatus("This commit has ${CHECKSTYLE_COUNT} warnings (${CHECKSTYLE_NEW} new)", "FAILURE", "continuous-integration/jenkins/checkstyle");
-          }
-        }
       }
     }
     stage('Deploy') {
@@ -63,6 +55,15 @@ pipeline {
     always {
       archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
       junit 'build/test-results/**/*.xml'
+      
+      echo "Checkstyle count: ${env.CHECKSTYLE_COUNT}"
+      script {
+        //echo "Checkstyle warning count: ${CHECKSTYLE_COUNT}"
+        if (CHECKSTYLE_COUNT > 0) {
+          echo "Checkstyle has warnings"
+          setBuildStatus("This commit has ${CHECKSTYLE_COUNT} warnings (${CHECKSTYLE_NEW} new)", "FAILURE", "continuous-integration/jenkins/checkstyle");
+        }
+      }
     }
   }
 }
