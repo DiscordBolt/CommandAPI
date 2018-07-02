@@ -46,12 +46,10 @@ pipeline {
       steps {
         echo 'Stage:Check'
         step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml'])
-        script {
-         WARNING_COUNT = tm (
-           stringWithMacro: "$CHECKSTYLE_COUNT"
-         ).trim()
-       } 
-       echo "Warnings: ${WARNING_COUNT}"
+        environment {
+          CHECKSTYLE_WARNING_COUNT = tm('$CHECKSTYLE_COUNT') 
+        }
+        echo env.CHECKSTYLE_COUNT
       }
     }
     stage('Deploy') {
