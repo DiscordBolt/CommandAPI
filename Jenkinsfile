@@ -46,7 +46,8 @@ pipeline {
       steps {
         echo 'Stage:Check'
         step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml'])
-        echo tm "$CHECKSTYLE_COUNT"
+        warningCount = tm "$CHECKSTYLE_COUNT"
+        echo "${warningCount}"
       }
     }
     stage('Deploy') {
