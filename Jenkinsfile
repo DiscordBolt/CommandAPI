@@ -1,6 +1,3 @@
-import org.jenkinsci.plugins.tokenmacro.TokenMacro;
-import hudson.plugins.checkstyle.tokens.*;
-
 void setBuildStatus(String message, String state, String context) {
   step([
       $class: "GitHubCommitStatusSetter",
@@ -47,8 +44,14 @@ pipeline {
         echo 'Stage:Check'
         step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml'])
         script {
-          def warnings = tm('$CHECKSTYLE_COUNT')
-          echo warnings
+          def warnings = tm('$CHECKSTYLE_COUNT').toInteger();
+          if (warnings > 0) {
+            echo "warnings greater than 0 " + warnings
+          } else if (warnings > 500) {
+            echo "warnings over 500!!! " + warnings
+          } else {
+            echo "warnings is 0 " + warnings
+          }
         }
       }
     }
@@ -62,19 +65,6 @@ pipeline {
     always {
       archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
       junit 'build/test-results/**/*.xml'
-      
-     /* script { 
-        echo env.WORKSPACE
-        echo env.currentListener
-        echo TokenMacro.expand(currentBuild.rawBuild, env.WORKSPACE, env.currentListener, "$CHECKSTYLE_COUNT");
-      }
-     /* script {
-        //echo "Checkstyle warning count: ${CHECKSTYLE_COUNT}"
-        if (CHECKSTYLE_COUNT > 0) {
-          echo "Checkstyle has warnings"
-          setBuildStatus("This commit has ${CHECKSTYLE_COUNT} warnings (${CHECKSTYLE_NEW} new)", "FAILURE", "continuous-integration/jenkins/checkstyle");
-        }
-      } */
     }
   }
 }
