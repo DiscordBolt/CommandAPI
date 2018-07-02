@@ -60,7 +60,11 @@ pipeline {
       
       script { 
         for (i = 0; i < TokenMacro.all().size(); i++) {
-          echo TokenMacro.all().get(i).toString();
+          if (TokenMacro.all().get(i) instanceof CheckStyleWarningCountTokenMacro) {
+            echo "Answer"
+            echo TokenMacro.all().get(i).evaluate();
+          }
+          echo TokenMacro.all().get(i).toString()
         }
         //echo TokenMacro.expand(currentBuild.rawBuild, StepContext.get(TaskListener.class), "$CHECKSTYLE_COUNT");
       }
