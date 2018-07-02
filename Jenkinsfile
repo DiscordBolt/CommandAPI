@@ -1,4 +1,5 @@
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
+import hudson.plugins.checkstyle.tokens.*;
 
 void setBuildStatus(String message, String state, String context) {
   step([
