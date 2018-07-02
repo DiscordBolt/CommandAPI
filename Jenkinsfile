@@ -49,7 +49,7 @@ pipeline {
         environment {
           CHECKSTYLE_WARNING_COUNT = tm('$CHECKSTYLE_COUNT') 
         }
-        echo env.CHECKSTYLE_COUNT
+        echo env.CHECKSTYLE_WARNING_COUNT
       }
     }
     stage('Deploy') {
