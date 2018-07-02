@@ -46,6 +46,7 @@ pipeline {
       steps {
         echo 'Stage:Check'
         step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml'])
+        echo tm "$CHECKSTYLE_COUNT"
       }
     }
     stage('Deploy') {
@@ -59,7 +60,7 @@ pipeline {
       archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
       junit 'build/test-results/**/*.xml'
       
-      script { 
+     /* script { 
         echo env.WORKSPACE
         echo env.currentListener
         echo TokenMacro.expand(currentBuild.rawBuild, env.WORKSPACE, env.currentListener, "$CHECKSTYLE_COUNT");
