@@ -60,14 +60,7 @@ pipeline {
       junit 'build/test-results/**/*.xml'
       
       script { 
-        for (i = 0; i < TokenMacro.all().size(); i++) {
-          if (TokenMacro.all().get(i) instanceof CheckStyleWarningCountTokenMacro) {
-            echo "Answer"
-            echo TokenMacro.all().get(i).evaluate();
-          }
-          echo TokenMacro.all().get(i).toString()
-        }
-        //echo TokenMacro.expand(currentBuild.rawBuild, StepContext.get(TaskListener.class), "$CHECKSTYLE_COUNT");
+        echo TokenMacro.expand(currentBuild.rawBuild, env.WORKSPACE, env.currentListener, "$CHECKSTYLE_COUNT");
       }
      /* script {
         //echo "Checkstyle warning count: ${CHECKSTYLE_COUNT}"
