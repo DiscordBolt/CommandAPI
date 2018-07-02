@@ -60,7 +60,7 @@ pipeline {
       
       script { 
         for (i = 0; i < TokenMacro.all().size(); i++) {
-          echo TokenMacro.all().get(i);
+          echo TokenMacro.all().get(i).toString();
         }
         //echo TokenMacro.expand(currentBuild.rawBuild, StepContext.get(TaskListener.class), "$CHECKSTYLE_COUNT");
       }
