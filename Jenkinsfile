@@ -60,6 +60,8 @@ pipeline {
       junit 'build/test-results/**/*.xml'
       
       script { 
+        echo env.WORKSPACE
+        echo env.currentListener
         echo TokenMacro.expand(currentBuild.rawBuild, env.WORKSPACE, env.currentListener, "$CHECKSTYLE_COUNT");
       }
      /* script {
