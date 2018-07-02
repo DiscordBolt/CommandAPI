@@ -59,7 +59,9 @@ pipeline {
       junit 'build/test-results/**/*.xml'
       
       script { 
-        echo TokenMacro.all();
+        for (i = 0; i < TokenMacro.all().size(); i++) {
+          echo TokenMacro.all().get(i);
+        }
         //echo TokenMacro.expand(currentBuild.rawBuild, StepContext.get(TaskListener.class), "$CHECKSTYLE_COUNT");
       }
      /* script {
