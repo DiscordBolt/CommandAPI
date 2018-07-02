@@ -47,9 +47,11 @@ pipeline {
           def warnings = tm('$CHECKSTYLE_COUNT').toInteger();
           if (warnings > 0) {
             echo "warnings greater than 0 " + warnings
-          } else if (warnings > 500) {
+          }
+          if (warnings > 500) {
             echo "warnings over 500!!! " + warnings
-          } else {
+          } 
+          if (warnings == 0) {
             echo "warnings is 0 " + warnings
           }
         }
