@@ -45,14 +45,9 @@ pipeline {
         step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml'])
         script {
           def warnings = tm('$CHECKSTYLE_COUNT').toInteger();
+          def warnings_new = tm('$CHECKSTYLE_NEW').toInteger();
           if (warnings > 0) {
-            echo "warnings greater than 0 " + warnings
-          }
-          if (warnings > 500) {
-            echo "warnings over 500!!! " + warnings
-          } 
-          if (warnings == 0) {
-            echo "warnings is 0 " + warnings
+            setBuildStatus("This commit has " + warnings + " checkstyle warnings. (" + warnings_new + " new)", "FAILURE", "continuous-integration/jenkins/checkstyle");
           }
         }
       }
