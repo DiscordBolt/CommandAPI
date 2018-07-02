@@ -59,7 +59,7 @@ pipeline {
       junit 'build/test-results/**/*.xml'
       
       script { 
-         echo TokenMacro.all()
+        echo TokenMacro.expand(currentBuild.rawBuild, TaskListener.NULL, "${CHECKSTYLE_COUNT}");
       }
      /* script {
         //echo "Checkstyle warning count: ${CHECKSTYLE_COUNT}"
