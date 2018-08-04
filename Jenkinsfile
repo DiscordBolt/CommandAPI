@@ -15,33 +15,24 @@ def isPRMergeBuild() {
 pipeline {
   agent {
     docker {
-      image 'gradle:4.8-jdk8-alpine'
+      image 'gradle:4.9-jdk8-slim'
     }
-
   }
   stages {
-    stage('Checkout') {
-      steps {
-        echo 'Stage:Checkout'
-        git 'https://github.com/DiscordBolt/CommandAPI'
-      }
-    }
     stage('Build') {
       steps {
-        echo 'Stage:Build'
-        sh 'chmod +x gradlew'
-        sh './gradlew build -x test'
+        sh 'gradle build -x test'
+        archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
       }
     }
     stage('Test') {
       steps {
-        echo 'Stage:Test'
-        sh './gradlew test'
+        sh 'gradle test'
+        junit 'build/test-results/**/*.xml'
       }
     }
     stage('Check') {
       steps {
-        echo 'Stage:Check'
         step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/reports/checkstyle/main.xml'])
         script {
           def warnings = tm('$CHECKSTYLE_COUNT').toInteger();
@@ -51,17 +42,6 @@ pipeline {
           }
         }
       }
-    }
-    stage('Deploy') {
-      steps {
-        echo 'Stage:Deploy'
-      }
-    }
-  }
-  post {
-    always {
-      archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
-      junit 'build/test-results/**/*.xml'
     }
   }
 }
