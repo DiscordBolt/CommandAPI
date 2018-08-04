@@ -1,8 +1,8 @@
 # CommandAPI
 
 # Javadocs
-[master](https://jitpack.io/com/github/DiscordBolt/CommandAPI/master-SNAPSHOT/javadoc/index.html)  
-[v2](https://jitpack.io/com/github/DiscordBolt/CommandAPI/v2-SNAPSHOT/javadoc/index.html)
+[Latest Release](https://jitpack.io/com/github/DiscordBolt/CommandAPI/master-SNAPSHOT/javadoc/index.html)  
+[Latest Dev](https://jitpack.io/com/github/DiscordBolt/CommandAPI/dev-SNAPSHOT/javadoc/index.html)
 
 # Initialization
 ```java
