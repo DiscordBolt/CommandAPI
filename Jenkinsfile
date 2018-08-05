@@ -52,13 +52,14 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'gradle build -x test'
+        sh 'chmod +x gradlew'
+        sh './gradlew build -x test'
         archiveArtifacts artifacts: 'build/libs/**/*.jar', fingerprint: true
       }
     }
     stage('Test') {
       steps {
-        sh 'gradle test'
+        sh './gradlew test'
         junit 'build/test-results/**/*.xml'
       }
     }
