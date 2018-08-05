@@ -1,5 +1,5 @@
 group 'com.discordbolt.api'
-version '2.1'
+version '2.1.1'
 
 buildscript {
     ext {
@@ -7,7 +7,7 @@ buildscript {
     }
 }
 
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'checkstyle'
@@ -31,7 +31,7 @@ repositories {
 
 dependencies {
     // Discord4J
-    implementation "com.discord4j.discord4j:discord4j-core:$discord4jVersion"
+    implementation group: 'com.discord4j.discord4j', name: 'discord4j-core', version: "$discord4jVersion"
     // Reflection (For finding commands)
     implementation group: 'org.reflections', name: 'reflections', version: '0.9.11'
     // Logging
@@ -58,4 +58,9 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 artifacts {
     archives sourcesJar
     archives javadocJar
+}
+
+wrapper {
+    gradleVersion = '4.9'
+    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
 }
