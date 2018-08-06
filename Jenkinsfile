@@ -59,7 +59,11 @@ pipeline {
     stage('Test') {
       steps {
         sh 'gradle test'
-        junit 'build/test-results/**/*.xml'
+      }
+      post {
+        always {
+          junit 'build/test-results/**/*.xml'
+        }
       }
     }
     stage('Check') {
