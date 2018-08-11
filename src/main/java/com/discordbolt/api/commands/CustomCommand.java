@@ -1,31 +1,22 @@
 package com.discordbolt.api.commands;
 
-import static com.discordbolt.api.commands.ValidityCheck.CheckResult;
-import static com.discordbolt.api.commands.ValidityCheck.argumentLowerBound;
-import static com.discordbolt.api.commands.ValidityCheck.argumentUpperBound;
-import static com.discordbolt.api.commands.ValidityCheck.channelBlacklist;
-import static com.discordbolt.api.commands.ValidityCheck.channelDM;
-import static com.discordbolt.api.commands.ValidityCheck.channelNameBlacklist;
-import static com.discordbolt.api.commands.ValidityCheck.channelNameWhitelist;
-import static com.discordbolt.api.commands.ValidityCheck.channelWhitelist;
-import static com.discordbolt.api.commands.ValidityCheck.permission;
-
+import com.discordbolt.api.commands.exceptions.CommandException;
+import com.discordbolt.api.commands.exceptions.CommandRuntimeException;
 import com.sun.istack.internal.NotNull;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.util.Permission;
 import discord4j.core.object.util.PermissionSet;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.LongStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
+
+import static com.discordbolt.api.commands.ValidityCheck.*;
 
 public abstract class CustomCommand {
 
@@ -257,7 +248,11 @@ public abstract class CustomCommand {
                 .switchIfEmpty(Mono.just(CheckResult.VALID))
                 .flatMap(checkResult -> {
                     if (checkResult == CheckResult.VALID) {
-                        this.execute(cc);
+                        try {
+                            this.execute(cc);
+                        } catch (CommandException | CommandRuntimeException e) {
+                            return cc.replyWith(e.getMessage());
+                        }
                         return Mono.empty();
                     } else {
                         return cc.replyWith(checkResult.getMessage());
@@ -274,5 +269,5 @@ public abstract class CustomCommand {
                 .subscribe();
     }
 
-    public abstract void execute(CommandContext commandContext);
+    public abstract void execute(CommandContext commandContext) throws CommandException;
 }
