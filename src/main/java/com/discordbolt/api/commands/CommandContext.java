@@ -1,16 +1,14 @@
 package com.discordbolt.api.commands;
 
-import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.MessageChannel;
-import discord4j.core.object.entity.PrivateChannel;
-import discord4j.core.object.entity.User;
+import discord4j.core.DiscordClient;
+import discord4j.core.object.entity.*;
+import discord4j.core.object.util.Snowflake;
 import discord4j.core.spec.EmbedCreateSpec;
+import reactor.core.publisher.Mono;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import reactor.core.publisher.Mono;
 
 public class CommandContext {
 
@@ -73,6 +71,22 @@ public class CommandContext {
         }
 
         return sb.toString();
+    }
+
+    public DiscordClient getClient() {
+        return message.getClient();
+    }
+
+    public Snowflake getUserId() {
+        return message.getAuthorId().orElse(null);
+    }
+
+    public Snowflake getChannelId() {
+        return message.getChannelId();
+    }
+
+    public Snowflake getMessageId() {
+        return message.getId();
     }
 
     /**
