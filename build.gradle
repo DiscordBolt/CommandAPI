@@ -1,5 +1,5 @@
 group 'com.discordbolt.api'
-version '2.2-SNAPSHOT'
+version '2.2'
 
 buildscript {
     ext {
