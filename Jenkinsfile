@@ -46,7 +46,7 @@ def isPRMergeBuild() {
 pipeline {
   agent {
     docker {
-      image 'gradle:4.9-jdk8-slim'
+      image 'gradle:4.9-jdk8'
     }
   }
   stages {
@@ -60,7 +60,11 @@ pipeline {
     stage('Test') {
       steps {
         sh './gradlew test'
-        junit 'build/test-results/**/*.xml'
+      }
+      post {
+        always {
+          junit 'build/test-results/**/*.xml'
+        }
       }
     }
     stage('Check') {
