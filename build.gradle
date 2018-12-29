@@ -32,6 +32,7 @@ repositories {
 dependencies {
     // Discord4J
     api group: 'com.discord4j.discord4j', name: 'discord4j-core', version: "$discord4jVersion"
+    api group: 'com.discord4j.discord4j', name: 'discord4j-command', version: "$discord4jVersion"
     // Reflection (For finding commands)
     implementation group: 'org.reflections', name: 'reflections', version: '0.9.11'
     // Logging
