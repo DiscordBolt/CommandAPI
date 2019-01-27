@@ -1,7 +1,10 @@
 package com.discordbolt.api.commands;
 
-import discord4j.core.spec.EmbedCreateSpec;
-import java.awt.Color;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
+
+import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,14 +36,11 @@ class HelpCommand extends CustomCommand {
 
         String commandPrefix = cc.getGuild().map(manager::getCommandPrefix).block();
 
-        int fieldCount = 0;
-        EmbedCreateSpec embed = new EmbedCreateSpec();
-        embed.setColor(new Color(36, 153, 153));
-
         StringBuilder sb = new StringBuilder();
+        List<Tuple2<String, String>> fields = new ArrayList();
         for (String module : modules) {
             // Discord only allows 25 fields in an embed
-            if (fieldCount > 25)
+            if (fields.size() > 25)
                 continue;
             sb.setLength(0);
 
@@ -62,11 +62,15 @@ class HelpCommand extends CustomCommand {
                 continue;
             }
 
-            fieldCount++;
-            embed.addField(module, sb.toString(), false);
+            fields.add(Tuples.of(module, sb.toString()));
         }
-        if (fieldCount > 0) {
-            cc.replyWith(embed).subscribe();
+
+        if (fields.size() > 0) {
+            cc.replyWith(spec -> {
+                spec.setColor(new Color(36, 153, 153));
+                for (Tuple2<String, String> field : fields)
+                    spec.addField(field.getT1(), field.getT2(), false);
+            }).subscribe();
         } else {
             cc.replyWith("No available commands.").subscribe();
         }
