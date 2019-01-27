@@ -1,10 +1,7 @@
 package com.discordbolt.api.commands;
 
 import com.discordbolt.api.commands.exceptions.ExceptionMessage;
-import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.MessageChannel;
-import discord4j.core.object.entity.Role;
-import discord4j.core.object.entity.TextChannel;
+import discord4j.core.object.entity.*;
 import discord4j.core.object.util.PermissionSet;
 import discord4j.core.object.util.Snowflake;
 import reactor.core.publisher.Mono;
@@ -20,7 +17,8 @@ class ValidityCheck {
         CHANNEL_NOT_ON_WHITELIST(ExceptionMessage.INVALID_CHANNEL),
         TOO_FEW_ARGUMENTS(ExceptionMessage.TOO_FEW_ARGUMENTS),
         TOO_MANY_ARGUMENTS(ExceptionMessage.TOO_MANY_ARGUMENTS),
-        INVALID_PERMISSION(ExceptionMessage.PERMISSION_DENIED);
+        INVALID_PERMISSION(ExceptionMessage.PERMISSION_DENIED),
+        BOT_INVALID_PERMISSION(ExceptionMessage.BOT_PERMISSION_DENIED);
 
         private final String message;
 
@@ -100,5 +98,21 @@ class ValidityCheck {
                 .switchIfEmpty(Mono.just(CheckResult.INVALID_PERMISSION));
 
         return directMessage.filter(checkResult -> checkResult != CheckResult.VALID).switchIfEmpty(permissionCheck);
+    }
+
+    static Mono<CheckResult> botPermission(CustomCommand command, CommandContext commandContext) {
+        if (command.getBotRequiredPermissions().isEmpty()) {
+            return VALID_CHECK;
+        }
+
+        if (!command.getCommandManager().getClient().getSelfId().isPresent()) {
+            return Mono.just(CheckResult.BOT_INVALID_PERMISSION);
+        }
+
+        return VALID_CHECK.filterWhen(r -> commandContext.getChannel()
+                .ofType(GuildChannel.class)
+                .flatMap(guildChannel -> guildChannel.getEffectivePermissions(command.getCommandManager().getClient().getSelfId().get()))
+                .map(currentPermissions -> currentPermissions.containsAll(command.getBotRequiredPermissions())))
+                .switchIfEmpty(Mono.just(CheckResult.BOT_INVALID_PERMISSION));
     }
 }

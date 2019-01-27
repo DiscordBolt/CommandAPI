@@ -37,6 +37,7 @@ public abstract class CustomCommand {
     private Set<String> channelNameWhitelist = new HashSet<>();
     private Set<String> channelNameBlacklist = new HashSet<>();
     private PermissionSet permissions = PermissionSet.none();
+    private PermissionSet botRequiredPermissions = PermissionSet.none();
     private int[] argRange = new int[]{0, Integer.MAX_VALUE};
     private boolean secret, allowDM, deleteTrigger;
 
@@ -48,6 +49,7 @@ public abstract class CustomCommand {
         setChannelNameWhitelist(a.channelNameWhitelist());
         setChannelNameBlacklist(a.channelNameBlacklist());
         setPermissions(a.permissions());
+        setBotRequiredPermissions(a.botPermissions());
         if (a.args().length == 1) {
             setArgumentCount(a.args()[0]);
         } else if (a.args().length == 2) {
@@ -121,6 +123,10 @@ public abstract class CustomCommand {
         return permissions;
     }
 
+    public PermissionSet getBotRequiredPermissions() {
+        return botRequiredPermissions;
+    }
+
     public int getMinArgCount() {
         return argRange[0];
     }
@@ -186,6 +192,11 @@ public abstract class CustomCommand {
         return this;
     }
 
+    public CustomCommand setBotRequiredPermissions(Permission... permissions) {
+        this.botRequiredPermissions = PermissionSet.of(permissions);
+        return this;
+    }
+
     public CustomCommand setArgumentCount(int argumentCount) {
         this.argRange[0] = argumentCount;
         this.argRange[1] = argumentCount;
@@ -232,7 +243,7 @@ public abstract class CustomCommand {
     }
 
     private Flux<ValidityCheck.CheckResult> hasPermission(CommandContext commandContext) {
-        return Flux.concat(permission(this, commandContext));
+        return Flux.concat(permission(this, commandContext), botPermission(this, commandContext));
     }
 
     CommandManager getCommandManager() {

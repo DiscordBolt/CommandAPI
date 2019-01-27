@@ -1,6 +1,7 @@
 package com.discordbolt.api.commands;
 
 import discord4j.core.object.util.Permission;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -59,6 +60,11 @@ public @interface BotCommand {
      * Required permissions a user executing a command must have
      */
     Permission[] permissions() default {};
+
+    /**
+     * Required permissions of the bot to execute this command
+     */
+    Permission[] botPermissions() default {};
 
     /**
      * The required number (or range) or args. This should be a single int or two ints
