@@ -6,6 +6,7 @@ import discord4j.core.object.util.Snowflake;
 import discord4j.core.spec.EmbedCreateSpec;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -72,6 +73,18 @@ public class CommandContext {
         }
 
         return sb.toString();
+    }
+
+    public List<Member> findMembers(int startIndex) {
+        String searchString = combineArgs(startIndex, getArgCount() - 1).toLowerCase();
+        List<Member> guildMembers = getGuild().flatMapMany(Guild::getMembers).collectList().block(); // TODO make this method reactive
+        List<Member> foundMembers = new ArrayList<>();
+        for (Member m : guildMembers) {
+            if (searchString.contains(m.getUsername().toLowerCase()) || searchString.contains(m.getNickname().orElse(m.getUsername()).toLowerCase())) {
+                foundMembers.add(m);
+            }
+        }
+        return foundMembers;
     }
 
     public DiscordClient getClient() {
