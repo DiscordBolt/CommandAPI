@@ -3,7 +3,7 @@ version '2.2.1-SNAPSHOT'
 
 buildscript {
     ext {
-        discord4jVersion = "3.0.0.M1"
+        discord4jVersion = "be57c36"
     }
 }
 

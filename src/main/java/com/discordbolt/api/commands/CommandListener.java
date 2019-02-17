@@ -3,8 +3,9 @@ package com.discordbolt.api.commands;
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
-import java.util.Optional;
 import reactor.core.publisher.Mono;
+
+import java.util.Optional;
 
 class CommandListener {
 
@@ -16,7 +17,8 @@ class CommandListener {
         client.getEventDispatcher()
                 .on(MessageCreateEvent.class)
                 .map(MessageCreateEvent::getMessage)
-                .filterWhen(message -> message.getAuthor().map(author -> !author.isBot()))
+                .filter(message -> message.getAuthor().isPresent())
+                .filter(message -> !message.getAuthor().get().isBot())
                 .filter(message -> message.getContent().isPresent())
                 .filterWhen(message -> message.getGuild().map(guild -> message.getContent().get().length() > manager.getCommandPrefix(guild).length()))
                 .subscribe(this::onCommand);

@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class CommandContext {
@@ -32,7 +33,7 @@ public class CommandContext {
         return message;
     }
 
-    public Mono<User> getUser() {
+    public Optional<User> getUser() {
         return message.getAuthor();
     }
 
@@ -86,7 +87,7 @@ public class CommandContext {
     }
 
     public Snowflake getUserId() {
-        return message.getAuthorId().orElse(null);
+        return message.getAuthor().map(User::getId).orElse(null);
     }
 
     public Snowflake getChannelId() {
