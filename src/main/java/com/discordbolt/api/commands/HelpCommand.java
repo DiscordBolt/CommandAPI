@@ -24,17 +24,27 @@ class HelpCommand extends CustomCommand {
 
         if (cc.getArgCount() > 1) {
             String userRequestedModule = cc.combineArgs(1, cc.getArgCount() - 1);
-            modules = modules.stream().filter(s -> s.equalsIgnoreCase(userRequestedModule)).collect(Collectors.toList());
+            modules.removeIf(s -> !s.equalsIgnoreCase(userRequestedModule));
             if (modules.size() < 1) {
                 cc.replyWith("No modules found matching \"" + userRequestedModule + "\".").subscribe();
                 return;
             }
         }
 
-        String commandPrefix = cc.getGuild().map(manager::getCommandPrefix).block();
+        long commandCount = manager.getCommands().stream().filter(c -> modules.contains(c.getModule())).count();
 
+        if (commandCount <= 0) {
+            cc.replyWith("No available commands.").subscribe();
+            return;
+        }
+
+        String commandPrefix = cc.getGuild().map(manager::getCommandPrefix).block();
+        cc.replyWith("Available Commands:", spec -> createHelpEmbed(spec, modules, commandPrefix)).subscribe();
+    }
+
+
+    private EmbedCreateSpec createHelpEmbed(EmbedCreateSpec embed, List<String> modules, String commandPrefix) {
         int fieldCount = 0;
-        EmbedCreateSpec embed = new EmbedCreateSpec();
         embed.setColor(new Color(36, 153, 153));
 
         StringBuilder sb = new StringBuilder();
@@ -65,10 +75,6 @@ class HelpCommand extends CustomCommand {
             fieldCount++;
             embed.addField(module, sb.toString(), false);
         }
-        if (fieldCount > 0) {
-            cc.replyWith(embed).subscribe();
-        } else {
-            cc.replyWith("No available commands.").subscribe();
-        }
+        return embed;
     }
 }

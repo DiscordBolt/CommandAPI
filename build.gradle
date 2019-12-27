@@ -1,9 +1,9 @@
 group 'com.discordbolt.api'
-version '2.2'
+version '2.3'
 
 buildscript {
     ext {
-        discord4jVersion = "v3-SNAPSHOT"
+        discord4jVersion = "3.0.12"
     }
 }
 
@@ -12,6 +12,7 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'checkstyle'
 apply plugin: 'jacoco'
+apply plugin: 'maven'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -23,15 +24,13 @@ checkstyle {
 
 repositories {
     mavenCentral()
-    // Discord 4J
-    maven { url  "https://jitpack.io" }
     // Reactor Fix
     maven { url 'https://repo.spring.io/milestone' }
 }
 
 dependencies {
     // Discord4J
-    api group: 'com.discord4j.discord4j', name: 'discord4j-core', version: "$discord4jVersion"
+    api group: 'com.discord4j', name: 'discord4j-core', version: "$discord4jVersion"
     // Reflection (For finding commands)
     implementation group: 'org.reflections', name: 'reflections', version: '0.9.11'
     // Logging
@@ -61,6 +60,6 @@ artifacts {
 }
 
 wrapper {
-    gradleVersion = '4.9'
+    gradleVersion = '6.0.1'
     distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
 }

@@ -9,6 +9,8 @@ import reactor.core.publisher.Mono;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 public class CommandContext {
 
@@ -30,7 +32,7 @@ public class CommandContext {
         return message;
     }
 
-    public Mono<User> getUser() {
+    public Optional<User> getUser() {
         return message.getAuthor();
     }
 
@@ -77,8 +79,8 @@ public class CommandContext {
         return message.getClient();
     }
 
-    public Snowflake getUserId() {
-        return message.getAuthorId().orElse(null);
+    public Optional<Snowflake> getUserId() {
+        return message.getAuthor().map(User::getId);
     }
 
     public Snowflake getChannelId() {
@@ -96,7 +98,7 @@ public class CommandContext {
      * @param message Message to send
      */
     public Mono<Message> replyWith(String message) {
-        return getChannel().flatMap(channel -> channel.createMessage(spec -> spec.setContent(message)));
+        return getChannel().flatMap(channel -> channel.createMessage(message));
     }
 
     /**
@@ -105,8 +107,8 @@ public class CommandContext {
      *
      * @param embed Embed to send
      */
-    public Mono<Message> replyWith(EmbedCreateSpec embed) {
-        return getChannel().flatMap(channel -> channel.createMessage(spec -> spec.setEmbed(embed)));
+    public Mono<Message> replyWith(Consumer<EmbedCreateSpec> embed) {
+        return getChannel().flatMap(channel -> channel.createEmbed(embed));
     }
 
     /**
@@ -116,7 +118,7 @@ public class CommandContext {
      * @param message Message to send
      * @param embed Embed to send
      */
-    public Mono<Message> replyWith(String message, EmbedCreateSpec embed) {
+    public Mono<Message> replyWith(String message, Consumer<EmbedCreateSpec> embed) {
         return getChannel().flatMap(channel -> channel.createMessage(spec -> spec.setContent(message).setEmbed(embed)));
     }
 

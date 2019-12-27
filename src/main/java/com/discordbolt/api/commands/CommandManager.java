@@ -64,6 +64,8 @@ public class CommandManager {
         helpCommand = new HelpCommand(this);
         registerCommand(helpCommand);
 
+        LOGGER.info("Loaded {} commands.", commands.size());
+
         // Register our command listener
         CommandListener commandListener = new CommandListener(this, client);
     }

@@ -16,7 +16,7 @@ class CommandListener {
         client.getEventDispatcher()
                 .on(MessageCreateEvent.class)
                 .map(MessageCreateEvent::getMessage)
-                .filterWhen(message -> message.getAuthor().map(author -> !author.isBot()))
+                .filter(message -> message.getAuthor().map(author -> !author.isBot()).orElse(false))
                 .filter(message -> message.getContent().isPresent())
                 .filterWhen(message -> message.getGuild().map(guild -> message.getContent().get().length() > manager.getCommandPrefix(guild).length()))
                 .subscribe(this::onCommand);
